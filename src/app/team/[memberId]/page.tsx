@@ -54,7 +54,10 @@ export async function generateMetadata({ params: { memberId } }: Params) {
 export default async function MemberPage({ params: { memberId } }: Params) {
   const member = await getMember(memberId);
   const mdxSrc = await getMemberMdxSrc(memberId);
-  const pubs = await getPubsByPerson(member.person!.id, memberId);
+  const pubs = await getPubsByPerson(
+    member.person!.id,
+    member.useSelectedPubs ? memberId : undefined,
+  );
 
   const {
     position,
@@ -252,8 +255,11 @@ export default async function MemberPage({ params: { memberId } }: Params) {
           </li>
           {pubs.length > 0 && (
             <li>
-              <Link href="#selected-publications">
-                <FontAwesomeIcon icon={faBook} /> Selected Publications
+              <Link
+                href={`#${member.useSelectedPubs ? "selected-" : ""}publications`}
+              >
+                <FontAwesomeIcon icon={faBook} />{" "}
+                {member.useSelectedPubs ? "Selected" : ""} Publications
               </Link>
             </li>
           )}
@@ -275,8 +281,11 @@ export default async function MemberPage({ params: { memberId } }: Params) {
           <>
             <div className="divider"></div>
             <DefaultMDX className="py-4">
-              <h2 id="selected-publications">
-                <FontAwesomeIcon icon={faBook} /> Selected Publications
+              <h2
+                id={`#${member.useSelectedPubs ? "selected-" : ""}publications`}
+              >
+                <FontAwesomeIcon icon={faBook} />{" "}
+                {member.useSelectedPubs ? "Selected" : ""} Publications
               </h2>
             </DefaultMDX>
             <div className="pl-4">

@@ -4,7 +4,7 @@ export function composeFullName(person: Person) {
   const { firstname, goby, middlename, lastname } = person;
   const name = middlename ? `${firstname} ${middlename}` : firstname;
   if (goby) {
-    return `${goby} (${name}) ${lastname}`;
+    return `${name} "${goby}" ${lastname}`;
   } else {
     return `${name} ${lastname}`;
   }
