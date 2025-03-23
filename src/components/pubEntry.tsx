@@ -32,13 +32,20 @@ export default function PubEntry({
   altStyle: boolean;
   highlightedPersonId?: number;
 }>) {
+  // regular bibtex
   const [showBibtex, setShowBibtex] = useState(false);
+  const bibtexRef = useRef<HTMLDivElement>(null);
+
+  // arxiv bibtex
+  const [showArxivBibtex, setShowArxivBibtex] = useState(false);
+  const arxivBibtexRef = useRef<HTMLDivElement>(null);
+
   let tags: Tag[] = [];
   if (pub.venueKey) {
     tags.push({
       id: -1,
       type: TagType.venue,
-      label: pub.venueKey,
+      label: `${pub.venueKey} ${pub.time && pub.time > new Date() ? "(to appear)" : ""}`,
       level: null,
     });
   }
@@ -49,7 +56,6 @@ export default function PubEntry({
         .sort((a, b) => (b.level || 0) - (a.level || 0)),
     );
   }
-  const bibtexRef = useRef<HTMLDivElement>(null);
 
   const context = useContext(DataContext);
   if (!context) {
@@ -143,16 +149,23 @@ export default function PubEntry({
           );
         })}
       </p>
-      <p className="text-sm 2xl:text-md font-light text-base-content/60">
-        {pub.booktitle}
-        {pub.time &&
-          `, ${pub.time.toLocaleDateString("en-US", {
-            year: "numeric",
-            month: "short",
-          })}`}
-        {/* pub.location && `, ${pub.location}` */}
-      </p>
-      {(pub.doi || pub.bibtex || pub.resources!.length > 0) && (
+      {pub.booktitle && (
+        <p className="text-sm 2xl:text-md font-light text-base-content/60">
+          {pub.booktitle}
+          {pub.time &&
+            `, ${pub.time.toLocaleDateString("en-US", {
+              year: "numeric",
+              month: "short",
+            })}`}
+          {/* pub.location && `, ${pub.location}` */}
+        </p>
+      )}
+      {(pub.doi ||
+        pub.bibtex ||
+        pub.arxivDOI ||
+        pub.arxivBibtex ||
+        pub.authorsCopy ||
+        pub.resources!.length > 0) && (
         <div className={`flex flex-row items-start gap-2 flex-wrap pt-1`}>
           {pub.doi && (
             <a
@@ -174,7 +187,40 @@ export default function PubEntry({
               }}
             >
               <FontAwesomeIcon icon={faPaperclip} />
-              Bibtex
+              bibtex
+            </button>
+          )}
+          {pub.authorsCopy && (
+            <a
+              className="flex-none btn btn-xs btn-secondary px-2 py-1"
+              href={pub.authorsCopy}
+              target="_blank"
+            >
+              <FontAwesomeIcon icon={faFilePdf} />
+              Authors&apos; Copy
+            </a>
+          )}
+          {pub.arxivDOI && (
+            <a
+              className="flex-none btn btn-xs btn-secondary px-2 py-1"
+              href={`https://doi.org/${pub.arxivDOI}`}
+              target="_blank"
+            >
+              <FontAwesomeIcon icon={faPaperPlane} />
+              arXiv
+            </a>
+          )}
+          {pub.arxivBibtex && (
+            <button
+              tabIndex={0}
+              className="flex-none btn btn-xs btn-secondary px-2 py-1"
+              onClick={() => {
+                setShowArxivBibtex(true);
+                arxivBibtexRef.current?.focus();
+              }}
+            >
+              <FontAwesomeIcon icon={faPaperclip} />
+              bibtex (arXiv)
             </button>
           )}
           {pub.resources!.map((res) => (
@@ -211,6 +257,17 @@ export default function PubEntry({
           addlOnBlur={() => setShowBibtex(false)}
         >
           <code className="text-neutral-content">{pub.bibtex}</code>
+        </CopyableCode>
+      </div>
+      <div
+        className={`transition-all duration-200 ease-in-out w-full h-fit overflow-y-clip ${showArxivBibtex ? "max-h-screen" : "max-h-0"}`}
+      >
+        <CopyableCode
+          className="bg-neutral mt-1 p-2 rounded-sm text-xs 2xl:text-sm h-full"
+          forwardRef={arxivBibtexRef}
+          addlOnBlur={() => setShowArxivBibtex(false)}
+        >
+          <code className="text-neutral-content">{pub.arxivBibtex}</code>
         </CopyableCode>
       </div>
     </div>

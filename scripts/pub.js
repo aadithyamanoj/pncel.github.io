@@ -39,6 +39,9 @@ const prisma = new PrismaClient();
 var allPersons = null; // lazy loading and updated when needed
 
 function sanitizeDOI(doi) {
+  if (doi === null || doi === undefined) {
+    return null;
+  }
   const match = doi.match(/10\.\d{4,9}\/[-._;()/:A-Z0-9]+$/i);
   if (match === null || match.length === 0) {
     return null;
@@ -121,7 +124,7 @@ if (mainOptions.command === "add-doi") {
     // check if the doi is already in the database
     const pubs = await prisma.publication.findMany({
       where: {
-        doi: doi,
+        OR: [{ doi: doi }, { arxivDOI: doi }],
       },
     });
     if (pubs.length > 0) {
@@ -228,20 +231,63 @@ if (mainOptions.command === "add-doi") {
     });
 
     // create publication
-    const res = await prisma.publication.create({
-      data: {
-        title: cite.data[0].title,
-        authors: {
-          connect: authors.map((author) => ({ id: author.id })),
-        },
-        time: getPublicationDate(cite.data[0]),
-        doi: doi,
-        booktitle: doi.toLowerCase().includes("arxiv")
-          ? "arXiv"
-          : cite.data[0]["container-title"],
-        bibtex: cite.format("bibtex"),
-        authorOrder: JSON.stringify(authors.map((author) => author.id)),
+    let pub = {
+      title: cite.data[0].title,
+      authors: {
+        connect: authors.map((author) => ({ id: author.id })),
       },
+      authorOrder: JSON.stringify(authors.map((author) => author.id)),
+    };
+
+    if (doi.startsWith("10.48550")) {
+      // arXiv DOIs follow the format 10.48550/arXiv.YYMM.NNNNN
+      const match = doi.match(/arxiv\.(\d{2})(\d{2})/i);
+      if (match) {
+        const yearDigits = parseInt(match[1]);
+        // Use 19xx for years >= 90, otherwise 20xx
+        const year = yearDigits >= 90 ? 1900 + yearDigits : 2000 + yearDigits;
+        const month = parseInt(match[2]) - 1; // JS months are 0-indexed
+        const day = 1;
+        pub.time = new Date(year, month, day).toISOString();
+      }
+      pub.arxivDOI = doi;
+      pub.arxivBibtex = cite.format("bibtex");
+    } else {
+      // regular DOI
+      // Standard logic for other types of publications
+      for (const dateField of [
+        cite.issued,
+        cite.published,
+        cite.created,
+        cite.deposited,
+      ]) {
+        if (
+          dateField &&
+          dateField["date-parts"] &&
+          dateField["date-parts"][0]
+        ) {
+          // Format is typically [[YYYY,MM,DD]] or [[YYYY,MM]]
+          const dateParts = dateField["date-parts"][0];
+          if (dateParts.length >= 2) {
+            // We have at least year and month
+            pub.time = new Date(
+              dateParts[0],
+              dateParts[1] - 1,
+              dateParts[2] || 1,
+            ).toISOString();
+          } else if (dateParts.length === 1) {
+            // We only have year
+            pub.time = new Date(dateParts[0], 0, 1).toISOString();
+          }
+          break;
+        }
+      }
+      pub.doi = doi;
+      pub.bibtex = cite.format("bibtex");
+    }
+
+    const res = await prisma.publication.create({
+      data: pub,
     });
 
     if (res) {
@@ -272,22 +318,41 @@ if (mainOptions.command === "update-doi") {
   });
 
   for (const pub of pubs) {
+    let doUpdate = false;
+    let update = {
+      where: { id: pub.id },
+      data: {},
+    };
+
     const doi = sanitizeDOI(pub.doi);
-    if (doi === null) {
-      continue;
+    if (doi !== null) {
+      const cite = new Cite(doi);
+      update.data.bibtex = cite.format("bibtex");
+      doUpdate = true;
     }
 
-    const cite = new Cite(doi);
-    const bibtex = cite.format("bibtex");
-    await prisma.publication.update({
-      where: {
-        id: pub.id,
-      },
-      data: {
-        bibtex: bibtex,
-      },
-    });
-    console.log(`Updated bibtex for publication ${pub.title} (id=${pub.id})`);
+    const arxivDOI = sanitizeDOI(pub.arxivDOI);
+    if (arxivDOI !== null) {
+      const cite = new Cite(arxivDOI);
+      update.data.arxivBibtex = cite.format("bibtex");
+      doUpdate = true;
+    }
+
+    if (doUpdate) {
+      const res = await prisma.publication.update(update);
+
+      if (res) {
+        console.log(
+          `Successfully updated publication #${pub.id}: ${pub.title}`,
+        );
+      } else {
+        console.log(
+          `Catastrophic failure: cannot update publication #${pub.id}: ${pub.title}`,
+        );
+        console.log(`Please roll back the database and try again`);
+        process.exit(1);
+      }
+    }
   }
 
   process.exit(0);
@@ -323,48 +388,3 @@ const help_top = [
 
 console.log(commandLineUsage(help_top));
 rl.close();
-
-/* ==============================================================================
-== Utilities: citation data handling ============================================
-============================================================================== */
-function getPublicationDate(citeData) {
-  // Special handling for arXiv DOIs which encode the year/month in the DOI itself
-  if (citeData.DOI && citeData.DOI.toLowerCase().includes("arxiv")) {
-    // arXiv DOIs follow the format 10.48550/arXiv.YYMM.NNNNN
-    const match = citeData.DOI.match(/arxiv\.(\d{2})(\d{2})/i);
-    if (match) {
-      const yearDigits = parseInt(match[1]);
-      // Use 19xx for years >= 90, otherwise 20xx
-      const year = yearDigits >= 90 ? 1900 + yearDigits : 2000 + yearDigits;
-      const month = parseInt(match[2]) - 1; // JS months are 0-indexed
-      const day = 1;
-      return new Date(year, month, day).toISOString();
-    }
-  }
-
-  // Standard logic for other types of publications
-  const dateField =
-    citeData.issued ||
-    citeData.published ||
-    citeData.created ||
-    citeData.deposited;
-
-  if (dateField && dateField["date-parts"] && dateField["date-parts"][0]) {
-    // Format is typically [[YYYY,MM,DD]] or [[YYYY,MM]]
-    const dateParts = dateField["date-parts"][0];
-    if (dateParts.length >= 2) {
-      // We have at least year and month
-      return new Date(
-        dateParts[0],
-        dateParts[1] - 1,
-        dateParts[2] || 1,
-      ).toISOString();
-    } else if (dateParts.length === 1) {
-      // We only have year
-      return new Date(dateParts[0], 0, 1).toISOString();
-    }
-  }
-
-  // If no valid date is found, throw an error
-  throw new Error(`Could not find publication date for ${citeData.title || 'publication'}`);
-}

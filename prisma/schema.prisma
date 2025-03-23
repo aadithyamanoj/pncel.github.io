@@ -103,11 +103,19 @@ model Publication {
 
   title       String
   authors     Person[]
+
   time        DateTime  // for sorting
   doi         String?   // if set, can be used to update all other fields with citation-js
   booktitle   String?   // or `journal` for journal papers
   venueKey    String?   // unique key for each venue, typically the acronym (e.g., MICRO, ISCA)
   bibtex      String?
+
+  // arxiv?
+  arxivDOI    String?
+  arxivBibtex String?
+
+  // link to authors' copy (pdf)
+  authorsCopy String?
 
   authorOrder  String // JSON array of person ids to order the authors correctly
   equalContrib Int? // the first N authors have equal contributions
