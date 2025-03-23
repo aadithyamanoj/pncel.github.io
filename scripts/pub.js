@@ -234,9 +234,11 @@ if (mainOptions.command === "add-doi") {
         authors: {
           connect: authors.map((author) => ({ id: author.id })),
         },
-        time: new Date(cite.data[0].created["date-parts"]).toISOString(),
+        time: getPublicationDate(cite.data[0]),
         doi: doi,
-        booktitle: cite.data[0]["container-title"],
+        booktitle: doi.toLowerCase().includes("arxiv")
+          ? "arXiv"
+          : cite.data[0]["container-title"],
         bibtex: cite.format("bibtex"),
         authorOrder: JSON.stringify(authors.map((author) => author.id)),
       },
@@ -321,3 +323,48 @@ const help_top = [
 
 console.log(commandLineUsage(help_top));
 rl.close();
+
+/* ==============================================================================
+== Utilities: citation data handling ============================================
+============================================================================== */
+function getPublicationDate(citeData) {
+  // Special handling for arXiv DOIs which encode the year/month in the DOI itself
+  if (citeData.DOI && citeData.DOI.toLowerCase().includes("arxiv")) {
+    // arXiv DOIs follow the format 10.48550/arXiv.YYMM.NNNNN
+    const match = citeData.DOI.match(/arxiv\.(\d{2})(\d{2})/i);
+    if (match) {
+      const yearDigits = parseInt(match[1]);
+      // Use 19xx for years >= 90, otherwise 20xx
+      const year = yearDigits >= 90 ? 1900 + yearDigits : 2000 + yearDigits;
+      const month = parseInt(match[2]) - 1; // JS months are 0-indexed
+      const day = 1;
+      return new Date(year, month, day).toISOString();
+    }
+  }
+
+  // Standard logic for other types of publications
+  const dateField =
+    citeData.issued ||
+    citeData.published ||
+    citeData.created ||
+    citeData.deposited;
+
+  if (dateField && dateField["date-parts"] && dateField["date-parts"][0]) {
+    // Format is typically [[YYYY,MM,DD]] or [[YYYY,MM]]
+    const dateParts = dateField["date-parts"][0];
+    if (dateParts.length >= 2) {
+      // We have at least year and month
+      return new Date(
+        dateParts[0],
+        dateParts[1] - 1,
+        dateParts[2] || 1,
+      ).toISOString();
+    } else if (dateParts.length === 1) {
+      // We only have year
+      return new Date(dateParts[0], 0, 1).toISOString();
+    }
+  }
+
+  // If no valid date is found, throw an error
+  throw new Error(`Could not find publication date for ${citeData.title || 'publication'}`);
+}
