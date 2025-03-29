@@ -17,12 +17,44 @@ export default function PubList({
     <div className="flex flex-col gap-4 min-w-0 w-full">
       {pubs.map((pub, idx) => {
         return (
-          <PubEntry
-            pub={pub}
-            highlightedPersonId={highlightedPersonId}
-            altStyle={(idx % 2 === 0) === (altStyle || false)}
-            key={pub.id}
-          ></PubEntry>
+          <>
+            <dialog id="modal_pncel_members" className="modal">
+              <div className="modal-box">
+                <h3 className="font-bold text-lg">
+                  <FontAwesomeIcon
+                    className="text-sm mx-1 rounded-md aspect-square p-1 bg-base-content text-base-100"
+                    icon={faP}
+                  />{" "}
+                  PᴺCEL member
+                </h3>
+                <p className="py-4">Press ESC key or click outside to close</p>
+              </div>
+              <form method="dialog" className="modal-backdrop">
+                <button>close</button>
+              </form>
+            </dialog>
+            <dialog id="modal_equal_contribution" className="modal">
+              <div className="modal-box">
+                <h3 className="font-bold text-lg">
+                  <FontAwesomeIcon
+                    className="text-sm mx-1 rounded-md aspect-square p-1 bg-base-content text-base-100"
+                    icon={fa1}
+                  />{" "}
+                  Equal contribution
+                </h3>
+                <p className="py-4">Press ESC key or click outside to close</p>
+              </div>
+              <form method="dialog" className="modal-backdrop">
+                <button>close</button>
+              </form>
+            </dialog>
+            <PubEntry
+              pub={pub}
+              highlightedPersonId={highlightedPersonId}
+              altStyle={(idx % 2 === 0) === (altStyle || false)}
+              key={pub.id}
+            ></PubEntry>
+          </>
         );
       })}
     </div>
@@ -33,13 +65,13 @@ export function PubListFootnote() {
   return (
     <>
       <p className="divider" />
-      <div id="footnote" className="text-sm text-base-content/60">
+      <div id="pub-footnote" className="text-sm text-base-content/60">
         <p>
           <FontAwesomeIcon
             className="text-xs mx-1 rounded-sm aspect-square p-px bg-base-content text-base-100"
             icon={faP}
           />
-          PᴺCEL Member
+          PᴺCEL member
         </p>
         <p>
           <FontAwesomeIcon
