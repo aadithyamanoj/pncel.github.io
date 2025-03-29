@@ -1,8 +1,13 @@
 "use client";
+import { faAngleDown } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { config } from "@fortawesome/fontawesome-svg-core";
 import Link from "next/link";
 import ThemeToggle from "./themeToggle";
 import React, { useEffect, useState, useRef } from "react";
 import { usePathname } from "next/navigation";
+
+config.autoAddCss = false;
 
 export default function NavAndDrawer({
   children,
@@ -48,6 +53,7 @@ export default function NavAndDrawer({
     { title: "Publications", target: "/pubs", sub: [] },
     { title: "Team", target: "/team", sub: [] },
     { title: "Join Us", target: "/join", sub: [] },
+    { title: "For Members", target: "/backstage", sub: [] },
   ];
 
   const pathname = usePathname();
@@ -117,6 +123,10 @@ export default function NavAndDrawer({
                                 tabIndex={0}
                               >
                                 {item.title}
+                                <FontAwesomeIcon
+                                  icon={faAngleDown}
+                                  className="ml-2"
+                                />
                               </div>
                               <div
                                 tabIndex={0}

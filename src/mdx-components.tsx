@@ -60,6 +60,9 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
         </Link>
       );
     },
+    li: ({ children }) => {
+      return <li className="my-1">{children}</li>;
+    },
     ...components,
   };
 }

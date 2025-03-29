@@ -239,7 +239,7 @@ if (mainOptions.command === "add-doi") {
       authorOrder: JSON.stringify(authors.map((author) => author.id)),
     };
 
-    if (doi.startsWith("10.48550")) {
+    if (doi.startsWith("10.48550/")) {
       // arXiv DOIs follow the format 10.48550/arXiv.YYMM.NNNNN
       const match = doi.match(/arxiv\.(\d{2})(\d{2})/i);
       if (match) {

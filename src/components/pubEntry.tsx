@@ -93,13 +93,22 @@ export default function PubEntry({
                 className="tooltip tooltip-secondary"
                 data-tip="Equal contribution"
               >
-                <FontAwesomeIcon
-                  className={
-                    `text-[0.5rem] ml-0.5 rounded-sm aspect-square p-px ` +
-                    `${author.id === highlightedPersonId ? "bg-secondary text-secondary-content" : "bg-base-content text-base-100"}`
+                <button
+                  tabIndex={-1}
+                  onClick={() =>
+                    document
+                      .getElementById("modal_equal_contribution")
+                      ?.showModal()
                   }
-                  icon={fa1}
-                />
+                >
+                  <FontAwesomeIcon
+                    className={
+                      `text-[0.5rem] ml-0.5 rounded-sm aspect-square p-px ` +
+                      `${author.id === highlightedPersonId ? "bg-secondary text-secondary-content" : "bg-base-content text-base-100"}`
+                    }
+                    icon={fa1}
+                  />
+                </button>
               </sup>
             ) : (
               ""
@@ -119,13 +128,22 @@ export default function PubEntry({
                     className="tooltip tooltip-secondary"
                     data-tip="PᴺCEL member"
                   >
-                    <FontAwesomeIcon
-                      className={
-                        `text-[0.5rem] ml-0.5 rounded-sm aspect-square p-px ` +
-                        `${author.id === highlightedPersonId ? "bg-secondary text-secondary-content" : "bg-base-content text-base-100"}`
+                    <button
+                      tabIndex={-1}
+                      onClick={() =>
+                        document
+                          .getElementById("modal_pncel_members")
+                          ?.showModal()
                       }
-                      icon={faP}
-                    />
+                    >
+                      <FontAwesomeIcon
+                        className={
+                          `text-[0.5rem] ml-0.5 rounded-sm aspect-square p-px ` +
+                          `${author.id === highlightedPersonId ? "bg-secondary text-secondary-content" : "bg-base-content text-base-100"}`
+                        }
+                        icon={faP}
+                      />
+                    </button>
                   </sup>
                 </span>
               ) : author.externalLink ? (
