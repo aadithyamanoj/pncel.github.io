@@ -95,11 +95,12 @@ export default function PubEntry({
               >
                 <button
                   tabIndex={-1}
-                  onClick={() =>
-                    document
-                      .getElementById("modal_equal_contribution")
-                      ?.showModal()
-                  }
+                  onClick={() => {
+                    const modal = document.getElementById(
+                      "modal_equal_contribution",
+                    ) as HTMLDialogElement;
+                    modal.showModal();
+                  }}
                 >
                   <FontAwesomeIcon
                     className={
@@ -130,11 +131,12 @@ export default function PubEntry({
                   >
                     <button
                       tabIndex={-1}
-                      onClick={() =>
-                        document
-                          .getElementById("modal_pncel_members")
-                          ?.showModal()
-                      }
+                      onClick={() => {
+                        const modal = document.getElementById(
+                          "modal_pncel_members",
+                        ) as HTMLDialogElement;
+                        modal.showModal();
+                      }}
                     >
                       <FontAwesomeIcon
                         className={
