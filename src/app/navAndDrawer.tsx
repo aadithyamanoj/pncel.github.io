@@ -53,7 +53,6 @@ export default function NavAndDrawer({
     { title: "Publications", target: "/pubs", sub: [] },
     { title: "Team", target: "/team", sub: [] },
     { title: "Join Us", target: "/join", sub: [] },
-    { title: "For Members", target: "/backstage", sub: [] },
   ];
 
   const pathname = usePathname();

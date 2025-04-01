@@ -281,12 +281,23 @@ export default async function MemberPage({ params: { memberId } }: Params) {
           <>
             <div className="divider"></div>
             <DefaultMDX className="py-4">
-              <h2
-                id={`#${member.useSelectedPubs ? "selected-" : ""}publications`}
-              >
-                <FontAwesomeIcon icon={faBook} />{" "}
-                {member.useSelectedPubs ? "Selected" : ""} Publications
-              </h2>
+              <div className="flex justify-between items-baseline">
+                <h2
+                  className="mt-0"
+                  id={`#${member.useSelectedPubs ? "selected-" : ""}publications`}
+                >
+                  <FontAwesomeIcon icon={faBook} />{" "}
+                  {member.useSelectedPubs ? "Selected" : ""} Publications
+                </h2>
+                {member.useSelectedPubs && (
+                  <Link
+                    className="btn btn-sm btn-ghost sm:text-xl text-lg"
+                    href={`/pubs/${memberId}`}
+                  >
+                    Full publication list
+                  </Link>
+                )}
+              </div>
             </DefaultMDX>
             <div className="pl-4">
               <PubList pubs={pubs} highlightedPersonId={member.person!.id} />
