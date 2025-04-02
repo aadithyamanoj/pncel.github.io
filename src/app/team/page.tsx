@@ -5,6 +5,7 @@ import { metadataTmpl } from "@/data/metadata";
 import { getAllMembers } from "@/data/member";
 import type { Member } from "@/data/types";
 import { MemberRole } from "@/data/enums";
+import { composeFullName } from "@/data/person";
 
 export const metadata = {
   ...metadataTmpl,
@@ -23,6 +24,7 @@ export default async function Team() {
     MemberRole.ms,
     MemberRole.ug,
     MemberRole.other,
+    MemberRole.alumni,
   ];
 
   const groups = allMembers.reduce((g: Map<MemberRole, Member[]>, m) => {
@@ -32,7 +34,20 @@ export default async function Team() {
     return g;
   }, new Map<MemberRole, Member[]>());
 
-  const groups_ordered = Array.from(groups.entries()).sort(([r0], [r1]) => {
+  const groups_sorted = new Map<MemberRole, Member[]>(
+    Array.from(groups.entries()).map(([role, members]) => [
+      role,
+      members.sort((a, b) => {
+        const aName = composeFullName(a.person!).toLowerCase();
+        const bName = composeFullName(b.person!).toLowerCase();
+        if (aName < bName) return -1;
+        else if (aName > bName) return 1;
+        else return 0;
+      }),
+    ]),
+  );
+
+  const groups_ordered = Array.from(groups_sorted.entries()).sort(([r0], [r1]) => {
     return group_order.indexOf(r0) - group_order.indexOf(r1);
   });
 
@@ -46,7 +61,7 @@ export default async function Team() {
           members.length > 0 && (
             <div key={role}>
               <p className="divider text-xl 2xl:text-2xl">{role}</p>
-              <div className="columns-1 sm:columns-2 xl:columns-3 2xl:columns-4 gap-x-4 py-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-x-4 py-4">
                 {members.map((m) => (
                   <MemberCard member={m} key={m.memberId}></MemberCard>
                 ))}

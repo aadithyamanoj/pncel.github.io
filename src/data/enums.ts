@@ -19,6 +19,7 @@ export enum MemberRole {
   postdoc = "Postdoc",
   staff = "Staff",
   visitor = "Visitor",
+  alumni = "Alumni",
 }
 
 export enum LinkIcon {
