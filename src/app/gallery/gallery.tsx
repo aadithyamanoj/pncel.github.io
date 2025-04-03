@@ -16,7 +16,7 @@ export default function Gallery({
 
   return (
     <>
-      <div className="mt-8 columns-sm gap-4">
+      <div className="mt-8 columns-1 min-[480px]:columns-2 xl:columns-3 gap-4">
         {specs.map((photo, i) => (
           <GalleryItem spec={photo} setHighlight={setHighlight} key={i} />
         ))}
