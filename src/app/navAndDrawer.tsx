@@ -52,6 +52,7 @@ export default function NavAndDrawer({
     },
     { title: "Publications", target: "/pubs", sub: [] },
     { title: "Team", target: "/team", sub: [] },
+    { title: "Gallery", target: "/gallery", sub: [] },
     { title: "Join Us", target: "/join", sub: [] },
   ];
 

@@ -55,3 +55,13 @@ export type Project = _Project & {
   members?: Member[];
   teams?: Team[];
 };
+
+export type GalleryItemSpec = {
+  title: string;
+  subtitle?: string;
+  width: number;
+  height: number;
+  image: string;
+  thumbnail?: string;
+  time: Date;
+};

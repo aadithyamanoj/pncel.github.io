@@ -47,9 +47,11 @@ export default async function Team() {
     ]),
   );
 
-  const groups_ordered = Array.from(groups_sorted.entries()).sort(([r0], [r1]) => {
-    return group_order.indexOf(r0) - group_order.indexOf(r1);
-  });
+  const groups_ordered = Array.from(groups_sorted.entries()).sort(
+    ([r0], [r1]) => {
+      return group_order.indexOf(r0) - group_order.indexOf(r1);
+    },
+  );
 
   return (
     <DefaultMain>
