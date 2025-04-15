@@ -1,10 +1,7 @@
 import Image from "next/image";
+import { readFile } from "fs/promises";
 import { MDXRemote } from "next-mdx-remote/rsc";
 import { useMDXComponents } from "@/mdx-components";
-import { metadataTmpl } from "@/data/metadata";
-import { getAllMemberIds, getMember, getMemberMdxSrc } from "@/data/member";
-import { getPubsByPerson } from "@/data/pub";
-import { composeFullName, composeHeadshotPlaceholder } from "@/data/person";
 import { config } from "@fortawesome/fontawesome-svg-core";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -14,21 +11,19 @@ import {
   faQuoteLeft,
   faBook,
 } from "@fortawesome/free-solid-svg-icons";
-import {
-  faLinkedin,
-  faGithub,
-  faXTwitter,
-  faFacebook,
-  faInstagram,
-  faGoogleScholar,
-  faOrcid,
-  faYoutube,
-} from "@fortawesome/free-brands-svg-icons";
 import "@fortawesome/fontawesome-svg-core/styles.css";
 import PubList, { PubListFootnote } from "@/components/pubList";
 import DefaultMDX from "@/layouts/defaultMdx";
 import DefaultMain from "@/layouts/defaultMain";
 import Link from "next/link";
+import { Database } from "@/data/database";
+import {
+  metadataTmpl,
+  composeFullName,
+  composeAvatarPlaceholder,
+} from "@/data/utils";
+import SelectedFontAwesomeIcon from "@/components/icon";
+import { Icon } from "@/data/types";
 config.autoAddCss = false;
 
 interface Params {
@@ -38,43 +33,54 @@ interface Params {
 }
 
 export async function generateStaticParams() {
-  const memberIds = await getAllMemberIds();
+  const db = await Database.get();
+  const memberIds = (await db.getManyMembers()).map((m) => ({
+    memberId: m.id,
+  }));
   return memberIds;
 }
 
 export async function generateMetadata({ params: { memberId } }: Params) {
-  const member = await getMember(memberId);
-  const fullname = composeFullName(member.person!);
+  const db = await Database.get();
+  const member = await db.getMember(memberId);
+  const fullname = composeFullName(member);
   return {
     ...metadataTmpl,
     title: metadataTmpl.title + " | Team | " + (fullname || memberId),
   };
 }
 
-export default async function MemberPage({ params: { memberId } }: Params) {
-  const member = await getMember(memberId);
-  const mdxSrc = await getMemberMdxSrc(memberId);
-  const pubs = await getPubsByPerson(
-    member.person!.id,
-    member.useSelectedPubs ? memberId : undefined,
-  );
+async function getMemberMdxSrc(memberId: string) {
+  // get mdx if there is one
+  const mdxSrc = await readFile(
+    process.cwd() + `/src/app/team/[memberId]/${memberId}.mdx`,
+    "utf-8",
+  ).catch((e) => {
+    if (e.code == "ENOENT") {
+      return null; // if no file, just return null
+    } else {
+      throw e;
+    }
+  });
 
+  return mdxSrc;
+}
+
+export default async function MemberPage({ params: { memberId } }: Params) {
+  const db = await Database.get();
+  const member = await db.getMember(memberId);
+  const fullname = composeFullName(member);
+  const placeholder = composeAvatarPlaceholder(member);
+  const pubs = await (member.memberInfo.selectedPubIds
+    ? db.getManyPublications(member.memberInfo.selectedPubIds)
+    : db.getAllPublicationsByPerson(member.id));
+  const mdxSrc = await getMemberMdxSrc(memberId);
   const {
-    position,
-    email,
-    office,
-    gscholar,
-    orcid,
-    github,
-    linkedin,
-    twitter,
-    facebook,
-    instagram,
-    youtube,
+    avatar,
+    externalLink,
+    memberInfo: { position, email, office },
   } = member;
-  const { firstname, lastname, externalLink, avatar } = member.person!;
-  const fullname = composeFullName(member.person!);
-  const placeholder = composeHeadshotPlaceholder(member.person!);
+  const useSelectedPubs = member.memberInfo.selectedPubIds !== undefined;
 
   return (
     <DefaultMain className="flex flex-col lg:flex-row gap-2 lg:gap-6">
@@ -138,15 +144,7 @@ export default async function MemberPage({ params: { memberId } }: Params) {
               </a>
             </p>
           )}
-          {(externalLink ||
-            gscholar ||
-            orcid ||
-            github ||
-            linkedin ||
-            twitter ||
-            facebook ||
-            instagram ||
-            youtube) && (
+          {(externalLink || member.memberInfo.links?.length) && (
             <div
               className={
                 "flex flex-row w-full flex-wrap gap-x-2 gap-y-0 " +
@@ -163,85 +161,22 @@ export default async function MemberPage({ params: { memberId } }: Params) {
                   <FontAwesomeIcon icon={faGlobe}></FontAwesomeIcon>
                 </a>
               )}
-              {gscholar && (
-                <a
-                  href={gscholar}
-                  target="_blank"
-                  className="tooltip"
-                  data-tip="Google Scholar"
-                >
-                  <FontAwesomeIcon icon={faGoogleScholar}></FontAwesomeIcon>
-                </a>
-              )}
-              {orcid && (
-                <a
-                  href={orcid}
-                  target="_blank"
-                  className="tooltip"
-                  data-tip="ORCiD"
-                >
-                  <FontAwesomeIcon icon={faOrcid}></FontAwesomeIcon>
-                </a>
-              )}
-              {github && (
-                <a
-                  href={github}
-                  target="_blank"
-                  className="tooltip"
-                  data-tip="GitHub"
-                >
-                  <FontAwesomeIcon icon={faGithub}></FontAwesomeIcon>
-                </a>
-              )}
-              {linkedin && (
-                <a
-                  href={linkedin}
-                  target="_blank"
-                  className="tooltip"
-                  data-tip="LinkedIn"
-                >
-                  <FontAwesomeIcon icon={faLinkedin}></FontAwesomeIcon>
-                </a>
-              )}
-              {twitter && (
-                <a
-                  href={twitter}
-                  target="_blank"
-                  className="tooltip"
-                  data-tip="X (Twitter)"
-                >
-                  <FontAwesomeIcon icon={faXTwitter}></FontAwesomeIcon>
-                </a>
-              )}
-              {instagram && (
-                <a
-                  href={instagram}
-                  target="_blank"
-                  className="tooltip"
-                  data-tip="Instagram"
-                >
-                  <FontAwesomeIcon icon={faInstagram}></FontAwesomeIcon>
-                </a>
-              )}
-              {facebook && (
-                <a
-                  href={facebook}
-                  target="_blank"
-                  className="tooltip"
-                  data-tip="Facebook"
-                >
-                  <FontAwesomeIcon icon={faFacebook}></FontAwesomeIcon>
-                </a>
-              )}
-              {youtube && (
-                <a
-                  href={youtube}
-                  target="_blank"
-                  className="tooltip"
-                  data-tip="Youtube"
-                >
-                  <FontAwesomeIcon icon={faYoutube}></FontAwesomeIcon>
-                </a>
+              {member.memberInfo.links?.map((l, i) =>
+                l.label ? (
+                  <a
+                    href={l.link}
+                    target="_blank"
+                    className="tooltip"
+                    data-tip={l.label}
+                    key={i}
+                  >
+                    <SelectedFontAwesomeIcon icon={l.icon || Icon.link} />
+                  </a>
+                ) : (
+                  <a href={l.link} target="_blank" key={i}>
+                    <SelectedFontAwesomeIcon icon={l.icon || Icon.link} />
+                  </a>
+                ),
               )}
             </div>
           )}
@@ -255,11 +190,9 @@ export default async function MemberPage({ params: { memberId } }: Params) {
           </li>
           {pubs.length > 0 && (
             <li>
-              <Link
-                href={`#${member.useSelectedPubs ? "selected-" : ""}publications`}
-              >
+              <Link href={`#${useSelectedPubs ? "selected-" : ""}publications`}>
                 <FontAwesomeIcon icon={faBook} />{" "}
-                {member.useSelectedPubs ? "Selected" : ""} Publications
+                {useSelectedPubs ? "Selected" : ""} Publications
               </Link>
             </li>
           )}
@@ -284,12 +217,12 @@ export default async function MemberPage({ params: { memberId } }: Params) {
               <div className="flex justify-between items-baseline">
                 <h2
                   className="mt-0"
-                  id={`#${member.useSelectedPubs ? "selected-" : ""}publications`}
+                  id={`#${useSelectedPubs ? "selected-" : ""}publications`}
                 >
                   <FontAwesomeIcon icon={faBook} />{" "}
-                  {member.useSelectedPubs ? "Selected" : ""} Publications
+                  {useSelectedPubs ? "Selected" : ""} Publications
                 </h2>
-                {member.useSelectedPubs && (
+                {useSelectedPubs && (
                   <Link
                     className="btn btn-sm btn-ghost sm:text-xl text-lg"
                     href={`/pubs/${memberId}`}
@@ -300,7 +233,7 @@ export default async function MemberPage({ params: { memberId } }: Params) {
               </div>
             </DefaultMDX>
             <div className="pl-4">
-              <PubList pubs={pubs} highlightedPersonId={member.person!.id} />
+              <PubList pubs={pubs} highlightedPersonId={member.id} />
               <PubListFootnote />
             </div>
           </>

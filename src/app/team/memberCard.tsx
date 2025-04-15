@@ -1,14 +1,19 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { composeFullName, composeHeadshotPlaceholder } from "@/data/person";
-import type { Member } from "@/data/types";
+import { composeFullName, composeAvatarPlaceholder } from "@/data/utils";
+import { Member } from "@/data/types";
 
-export default function MemberCard({ member }: Readonly<{ member: Member }>) {
-  const { memberId, position } = member;
-  const { avatar } = member.person!;
-  const fullname = composeFullName(member.person!);
-  const placeholder = composeHeadshotPlaceholder(member.person!);
+export default async function MemberCard({
+  member,
+}: Readonly<{ member: Member }>) {
+  const {
+    id,
+    avatar,
+    memberInfo: { position },
+  } = member;
+  const fullname = composeFullName(member);
+  const placeholder = composeAvatarPlaceholder(member);
 
   return (
     <div
@@ -17,7 +22,7 @@ export default function MemberCard({ member }: Readonly<{ member: Member }>) {
         "shadow-xl rounded-xl overflow-clip break-inside-avoid-column"
       }
     >
-      <Link href={`/team/${memberId}`}>
+      <Link href={`/team/${id}`}>
         <div className="w-full p-4 gap-8 m-auto flex flex-row items-center bg-neutral">
           <div
             className={

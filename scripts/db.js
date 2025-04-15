@@ -1,11 +1,14 @@
-import { PrismaClient } from "@prisma/client";
+import { Database, decodePublication, encodeDate } from "./dist/database.js";
+import { DatabaseMutator } from "./dist/databaseMutator.js";
 import commandLineUsage from "command-line-usage";
 import commandLineArgs from "command-line-args";
+import sharp from "sharp";
 import { Cite } from "@citation-js/core";
 import "@citation-js/plugin-bibtex";
 import "@citation-js/plugin-doi";
 import Fuse from "fuse.js";
 import readline from "node:readline";
+import { copyFile } from "fs/promises";
 
 /* parse the main command */
 const mainDefinitions = [{ name: "command", defaultOption: true }];
@@ -15,6 +18,102 @@ const mainOptions = commandLineArgs(mainDefinitions, {
   stopAtFirstUnknown: true,
 });
 const argv = mainOptions._unknown || [];
+
+/* command line usage table */
+const help_header = {
+  header: "PNCEL Website DB Manager",
+  content: "A node.js script for easier management of the database",
+};
+const help_commands = {
+  "add-doi": {
+    synopsis: "$ node /scripts/db.js add-doi <doi> [<doi> ...]",
+    summary: "Add publication(s) from doi",
+  },
+  "update-bibtex": {
+    synopsis: "$ node /scripts/db.js update-bibtex",
+    summary: "Update bibtex by automatically fetching from the DOI/arxivDOI",
+  },
+  "add-photo": {
+    synopsis:
+      '$ node /scripts/db.js add-photo [--title "TITLE"] [--subtitle "SUBTITLE"] [--date 2020-01-01] /path/to/photo',
+    summary:
+      "Add photo(s). Photo is renamed and copied to public/photos. Thumbnail is generated.",
+    options: [
+      {
+        name: "--title",
+        typeLabel: "{underline TITLE}",
+        description: 'Default to "__no_name__"',
+      },
+      {
+        name: "--subtitle",
+        typeLabel: "{underline SUBTITLE}",
+        description: "Default to none",
+      },
+      {
+        name: "--date",
+        typeLabel: "{underline 2020-01-01}",
+        description: `Date of the photo. Default to today (${encodeDate(new Date())})`,
+      },
+    ],
+  },
+  help: {
+    synopsis: "$ node /scripts/db.js help [command]",
+    summary: "Display this usage guide or help on a particular command",
+  },
+};
+
+async function flush_and_exit(stderr = false) {
+  return new Promise(() => {
+    (stderr ? process.stderr : process.stdout).write("", () => {
+      process.exit(0);
+    });
+  });
+}
+
+async function help_and_exit(cmd) {
+  const help = help_commands[cmd];
+  if (!help) {
+    console.log(
+      commandLineUsage([
+        help_header,
+        {
+          header: "Synopsis",
+          content: "$ node /scripts/db.js <command> <options>",
+        },
+        {
+          header: "Commands",
+          content: Array.from(Object.entries(help_commands)).map(
+            ([c, { summary }]) => ({
+              name: c,
+              summary: summary,
+            }),
+          ),
+        },
+      ]),
+    );
+    await flush_and_exit();
+  } else {
+    const usage = [
+      help_header,
+      {
+        header: `Command: ${cmd}`,
+        content: help.summary,
+      },
+      {
+        header: "Synopsis",
+        content: help.synopsis,
+      },
+    ];
+    if ((help.options?.length || 0) > 0) {
+      usage.push({
+        header: "Options",
+        optionList: help.options,
+      });
+    }
+    console.log(commandLineUsage(usage));
+    await flush_and_exit();
+  }
+}
 
 /* ==============================================================================
 == Utilities: interactive console ===============================================
@@ -34,9 +133,10 @@ async function askQuestion(question) {
 
 /* ==============================================================================
 == Utilities: db access =========================================================
-============================================================================== */
-const prisma = new PrismaClient();
-var allPersons = null; // lazy loading and updated when needed
+============================================================================= */
+const db = await Database.get();
+const mutator = new DatabaseMutator(db);
+await mutator.settle();
 
 function sanitizeDOI(doi) {
   if (doi === null || doi === undefined) {
@@ -51,15 +151,8 @@ function sanitizeDOI(doi) {
 }
 
 async function fuzzySearchByName(cite_author) {
-  if (allPersons === null) {
-    allPersons = prisma.person.findMany({
-      include: {
-        member: true,
-      },
-    });
-  }
-
-  const fuse_bylastname = new Fuse(await allPersons, {
+  const persons = await db.getManyPersons();
+  const fuse_bylastname = new Fuse(persons, {
     keys: ["lastname"],
     distance: 1,
     threshold: 0.05, // stricter than default
@@ -85,56 +178,43 @@ async function fuzzySearchByName(cite_author) {
     middlename: item.middlename,
     goby: item.goby,
     externalLink: item.externalLink,
-    isMember: item.member !== null,
+    isMember: item.memberInfo !== undefined,
   }));
 }
 
 /* ==============================================================================
 == Command: add-doi =============================================================
 ============================================================================== */
-const help_add_doi = [
-  {
-    header: "PNCEL Website Publication Manager",
-    content:
-      "A node.js script for easier management of the publications without dealing with the SQLite database",
-  },
-  {
-    header: "Command: add-doi",
-    content: "Add a publication with doi",
-  },
-  {
-    header: "Synopsis",
-    content: "$ node /scripts/pub.js add-doi <doi> [<doi> ...]",
-  },
-];
-
 if (mainOptions.command === "add-doi") {
   if (argv.length === 0) {
-    console.log(commandLineUsage(help_add_doi));
-    process.exit(1);
+    await help_and_exit(mainOptions.command);
   }
 
   for (const doi_ of argv) {
     const doi = sanitizeDOI(doi_);
     if (doi === null) {
-      console.log(`Invalid doi: ${doi_}`);
+      console.error(`Invalid doi: ${doi_}`);
       continue;
     }
 
     // check if the doi is already in the database
-    const pubs = await prisma.publication.findMany({
-      where: {
-        OR: [{ doi: doi }, { arxivDOI: doi }],
-      },
-    });
+    const pubs = (
+      await db.db.publications
+        .find({
+          selector: {
+            $or: [{ doi: { $eq: doi } }, { arxivDoi: { $eq: doi } }],
+          },
+        })
+        .exec()
+    ).map(decodePublication);
     if (pubs.length > 0) {
-      console.log(
+      console.error(
         `Publication(s) with doi ${doi} already exists in the database`,
       );
       for (const pub of pubs) {
-        console.log(`- ${pub.title}`);
+        console.error(`- ${pub.title}`);
       }
-      process.exit(1);
+      await flush_and_exit(true);
     }
 
     const cite = new Cite(doi);
@@ -160,7 +240,7 @@ if (mainOptions.command === "add-doi") {
           });
         } else if (matches.length === 1) {
           console.log(
-            `Found author "${cite_author.given} ${cite_author.family}" (id: ${matches[0].id}, ${matches[0].isMember ? "" : "NOT"} PNCEL member) in the data base.`,
+            `Found author "${cite_author.given} ${cite_author.family}" in database: (id: ${matches[0].id}, member? ${matches[0].isMember ? "Y" : "N"})`,
           );
           const answer = await askQuestion(
             `Type yes to connect, no to skip this doi (yes/no): `,
@@ -172,11 +252,11 @@ if (mainOptions.command === "add-doi") {
           }
         } else {
           console.log(
-            `Found multiple auhors that match "${cite_author.given} ${cite_author.family}" in the database:`,
+            `Found multiple authors that match "${cite_author.given} ${cite_author.family}" in the database:`,
           );
           matches.forEach((match, i) => {
             console.log(
-              `[${i}] id: ${match.id}, ${match.isMember ? "" : "NOT"} PNCEL member`,
+              `[${i}] id: ${match.id}, member ? ${match.isMember ? "Y" : "N"}`,
             );
           });
           const answer = await askQuestion(
@@ -195,12 +275,9 @@ if (mainOptions.command === "add-doi") {
         }
       }
     } catch (e) {
-      console.log(`Skipping adding doi ${doi} due to author issues`);
+      console.warn(`Skipping adding doi ${doi} due to author issues`);
       continue;
     }
-
-    // invalidate allPersons cache
-    allPersons = null;
 
     // create all the persons
     const { authors_to_create, author_indices } = authors.reduce(
@@ -214,15 +291,16 @@ if (mainOptions.command === "add-doi") {
       { authors_to_create: [], author_indices: [] },
     );
 
-    const authors_created = await prisma.$transaction(
-      authors_to_create.map((author) => prisma.person.create({ data: author })),
+    const authors_created = await Promise.all(
+      authors_to_create.map((author) => mutator.createPerson(author)),
     );
+
     if (authors_created.length !== authors_to_create.length) {
-      console.log(
+      console.error(
         `Catastrophic failure: cannot create all the authors for doi ${doi}`,
       );
-      console.log(`Please roll back the database and try again`);
-      process.exit(1);
+      console.error(`Please roll back the database and try again`);
+      await flush_and_exit(true);
     }
 
     // connect the authors
@@ -233,10 +311,7 @@ if (mainOptions.command === "add-doi") {
     // create publication
     let pub = {
       title: cite.data[0].title,
-      authors: {
-        connect: authors.map((author) => ({ id: author.id })),
-      },
-      authorOrder: JSON.stringify(authors.map((author) => author.id)),
+      authorIds: authors.map((author) => author.id),
     };
 
     if (doi.startsWith("10.48550/")) {
@@ -248,9 +323,9 @@ if (mainOptions.command === "add-doi") {
         const year = yearDigits >= 90 ? 1900 + yearDigits : 2000 + yearDigits;
         const month = parseInt(match[2]) - 1; // JS months are 0-indexed
         const day = 1;
-        pub.time = new Date(year, month, day).toISOString();
+        pub.time = new Date(year, month, day);
       }
-      pub.arxivDOI = doi;
+      pub.arxivDoi = doi;
       pub.arxivBibtex = cite.format("bibtex");
     } else {
       // regular DOI
@@ -274,10 +349,10 @@ if (mainOptions.command === "add-doi") {
               dateParts[0],
               dateParts[1] - 1,
               dateParts[2] || 1,
-            ).toISOString();
+            );
           } else if (dateParts.length === 1) {
             // We only have year
-            pub.time = new Date(dateParts[0], 0, 1).toISOString();
+            pub.time = new Date(dateParts[0], 0, 1);
           }
           break;
         }
@@ -286,105 +361,116 @@ if (mainOptions.command === "add-doi") {
       pub.bibtex = cite.format("bibtex");
     }
 
-    const res = await prisma.publication.create({
-      data: pub,
-    });
-
-    if (res) {
-      console.log(`Successfully added publication with doi ${doi}`);
-    } else {
+    try {
+      await mutator.createPublication(pub);
+    } catch (e) {
       console.log(
         `Catastrophic failure: cannot add publication with doi ${doi}`,
       );
-      console.log(`Please roll back the database and try again`);
-      process.exit(1);
+      throw e;
     }
+
+    await mutator.persist();
+    console.log(`Successfully added publication with doi ${doi}`);
   }
 
-  process.exit(0);
+  await flush_and_exit();
 }
 
 /* ==============================================================================
-== Command: update-doi ==========================================================
+== Command: update-bibtex =======================================================
 ============================================================================== */
-if (mainOptions.command === "update-doi") {
-  // for now only update bibtex
-  const pubs = await prisma.publication.findMany({
-    where: {
-      doi: {
-        not: null,
+if (mainOptions.command === "update-bibtex") {
+  const pubs = await db.db.publications
+    .find({
+      selector: {
+        $or: [
+          { doi: { $exists: true }, bibtex: { $exists: false } },
+          { arxivDoi: { $exists: true }, arxivBibtex: { $exists: false } },
+        ],
       },
-    },
-  });
+    })
+    .exec();
 
+  let updated = false;
   for (const pub of pubs) {
     let doUpdate = false;
-    let update = {
-      where: { id: pub.id },
-      data: {},
-    };
+    let update = {};
 
     const doi = sanitizeDOI(pub.doi);
     if (doi !== null) {
       const cite = new Cite(doi);
-      update.data.bibtex = cite.format("bibtex");
+      update.bibtex = cite.format("bibtex");
       doUpdate = true;
     }
 
-    const arxivDOI = sanitizeDOI(pub.arxivDOI);
-    if (arxivDOI !== null) {
-      const cite = new Cite(arxivDOI);
-      update.data.arxivBibtex = cite.format("bibtex");
+    const arxivDoi = sanitizeDOI(pub.arxivDoi);
+    if (arxivDoi !== null) {
+      const cite = new Cite(arxivDoi);
+      update.arxivBibtex = cite.format("bibtex");
       doUpdate = true;
     }
 
     if (doUpdate) {
-      const res = await prisma.publication.update(update);
-
-      if (res) {
-        console.log(
-          `Successfully updated publication #${pub.id}: ${pub.title}`,
-        );
-      } else {
-        console.log(
-          `Catastrophic failure: cannot update publication #${pub.id}: ${pub.title}`,
-        );
-        console.log(`Please roll back the database and try again`);
-        process.exit(1);
-      }
+      await pub.patch(update);
+      updated = true;
+      console.log(`Successfully updated publication ${pub.id}: ${pub.title}`);
     }
   }
 
-  process.exit(0);
+  await mutator.persist(updated);
+  await flush_and_exit();
+}
+
+/* ==============================================================================
+== Command: add-photo ===========================================================
+============================================================================== */
+if (mainOptions.command === "add-photo") {
+  const commandDefinitions = [
+    { name: "title", type: String },
+    { name: "subtitle", type: String },
+    { name: "date", type: String },
+  ];
+  const options = commandLineArgs(commandDefinitions, {
+    argv,
+    stopAtFirstUnknown: true,
+  });
+  const left = options._unknown || [];
+  if (left.length !== 1) {
+    await help_and_exit(mainOptions.command);
+  }
+
+  const photo = left[0];
+  const sharpImg = sharp(photo);
+  const id = mutator.photosMutator.allocId();
+  const metadata = await sharpImg.metadata();
+
+  const image = `/photos/${id}.${photo.split(".").pop()}`;
+  const thumbnail = `/photos/thumbnails/${id}.${photo.split(".").pop()}`;
+  await copyFile(photo, `${process.cwd()}/public${image}`);
+  await sharpImg.resize(384).toFile(`${process.cwd()}/public${thumbnail}`);
+  await db.db.photos.insert({
+    id,
+    image,
+    thumbnail,
+    width: metadata.width,
+    height: metadata.height,
+    title: options.title || "__no_name__",
+    time: encodeDate(new Date(options.date)),
+    subtitle: options.subtitle,
+  });
+  console.log(`Successfully added photo ${photo} -- new id: ${id}`);
+  await mutator.persist(true);
+  await flush_and_exit();
 }
 
 /* ==============================================================================
 == Command: help ================================================================
 ============================================================================== */
+if (mainOptions.command === "help" && argv.length === 1) {
+  await help_and_exit(argv[0]);
+}
 
 /* top-level usage */
-const help_top = [
-  {
-    header: "PNCEL Website Publication Manager",
-    content:
-      "A node.js script for easier management of the publications without dealing with the SQLite database",
-  },
-  {
-    header: "Synopsis",
-    content: "$ node /scripts/pub.js <command> <options>",
-  },
-  {
-    header: "Commands",
-    content: [
-      { name: "add-doi", summary: "Add a publication with doi" },
-      { name: "update-doi", summary: "Update all publications with doi" },
-      {
-        name: "help",
-        summary: "Display this usage guide or help on a particular command",
-      },
-    ],
-  },
-];
-
-console.log(commandLineUsage(help_top));
 rl.close();
+await help_and_exit();

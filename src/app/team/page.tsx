@@ -1,11 +1,9 @@
 import DefaultMain from "@/layouts/defaultMain";
 import DefaultMDX from "@/layouts/defaultMdx";
 import MemberCard from "./memberCard";
-import { metadataTmpl } from "@/data/metadata";
-import { getAllMembers } from "@/data/member";
-import type { Member } from "@/data/types";
-import { MemberRole } from "@/data/enums";
-import { composeFullName } from "@/data/person";
+import { metadataTmpl, composeFullName } from "@/data/utils";
+import { Database } from "@/data/database";
+import { Member, MemberRole } from "@/data/types";
 
 export const metadata = {
   ...metadataTmpl,
@@ -13,7 +11,8 @@ export const metadata = {
 };
 
 export default async function Team() {
-  const allMembers = await getAllMembers();
+  const db = await Database.get();
+  const allMembers = await db.getManyMembers();
 
   const group_order = [
     MemberRole.pi,
@@ -24,13 +23,10 @@ export default async function Team() {
     MemberRole.ms,
     MemberRole.ug,
     MemberRole.other,
-    MemberRole.alumni,
   ];
 
-  const groups = allMembers.reduce((g: Map<MemberRole, Member[]>, m) => {
-    const members = g.get(m.role) || [];
-    members.push(m);
-    g.set(m.role, members);
+  const groups = allMembers.reduce((g: Map<MemberRole, Member[]>, p) => {
+    g.set(p.memberInfo.role, (g.get(p.memberInfo.role) || []).concat(p));
     return g;
   }, new Map<MemberRole, Member[]>());
 
@@ -38,8 +34,8 @@ export default async function Team() {
     Array.from(groups.entries()).map(([role, members]) => [
       role,
       members.sort((a, b) => {
-        const aName = composeFullName(a.person!).toLowerCase();
-        const bName = composeFullName(b.person!).toLowerCase();
+        const aName = composeFullName(a).toLowerCase();
+        const bName = composeFullName(b).toLowerCase();
         if (aName < bName) return -1;
         else if (aName > bName) return 1;
         else return 0;
@@ -65,7 +61,7 @@ export default async function Team() {
               <p className="divider text-xl 2xl:text-2xl">{role}</p>
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-x-4 py-4">
                 {members.map((m) => (
-                  <MemberCard member={m} key={m.memberId}></MemberCard>
+                  <MemberCard member={m} key={m.id}></MemberCard>
                 ))}
               </div>
             </div>

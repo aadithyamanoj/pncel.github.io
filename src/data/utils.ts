@@ -1,5 +1,4 @@
-import type { Person } from "./types";
-
+import { Person } from "./types";
 export function composeFullName(person: Person) {
   const { firstname, goby, middlename, lastname } = person;
   const name = middlename ? `${firstname} ${middlename}` : firstname;
@@ -10,7 +9,7 @@ export function composeFullName(person: Person) {
   }
 }
 
-export function composeHeadshotPlaceholder(person: Person) {
+export function composeAvatarPlaceholder(person: Person) {
   const { firstname, goby, lastname } = person;
   const placeholder = [goby || firstname, lastname]
     .filter((s) => s !== undefined)
@@ -20,3 +19,9 @@ export function composeHeadshotPlaceholder(person: Person) {
     .toUpperCase();
   return placeholder;
 }
+
+export const metadataTmpl = {
+  title: "PᴺCEL",
+  description:
+    "PNCEL: {Programmable, Parallel, high-Performance, Power-efficient, ...} Computer Engineering Lab at University of Washington (UW)",
+};
