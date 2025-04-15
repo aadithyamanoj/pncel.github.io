@@ -294,13 +294,13 @@ export class DatabaseMutator extends Object {
       )) {
         if (person.id !== id)
           console.log(
-            `Assigned permanent ID for person with temporary ID=${id}`,
+            `Assigned permanent ID='${person.id}' for person with temporary ID='${id}'`,
           );
       }
       for (const [id, pub] of Array.from(this.pubsMutator.fixes.entries())) {
         if (pub.id !== id)
           console.log(
-            `Assigned permanent ID for publication with temporary ID=${id}`,
+            `Assigned permanent ID='${pub.id}' for publication with temporary ID='${id}'`,
           );
       }
       for (const [id, photo] of Array.from(
@@ -308,7 +308,7 @@ export class DatabaseMutator extends Object {
       )) {
         if (photo.id !== id)
           console.log(
-            `Assigned permanent ID for photo with temporary ID=${id}`,
+            `Assigned permanent ID='${photo.id}' for photo with temporary ID='${id}'`,
           );
       }
       this.personsMutator.clearFixes();

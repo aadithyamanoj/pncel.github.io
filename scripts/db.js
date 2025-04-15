@@ -25,6 +25,10 @@ const help_header = {
   content: "A node.js script for easier management of the database",
 };
 const help_commands = {
+  fix: {
+    synopsis: "$ node /scripts/db.js fix",
+    summary: "Fix temporary IDs in database files",
+  },
   "add-doi": {
     synopsis: "$ node /scripts/db.js add-doi <doi> [<doi> ...]",
     summary: "Add publication(s) from doi",
@@ -461,6 +465,14 @@ if (mainOptions.command === "add-photo") {
   });
   console.log(`Successfully added photo ${photo} -- new id: ${id}`);
   await mutator.persist(true);
+  await flush_and_exit();
+}
+
+/* ==============================================================================
+== Command: fix =================================================================
+============================================================================== */
+if (mainOptions.command === "fix") {
+  await mutator.persist();
   await flush_and_exit();
 }
 
