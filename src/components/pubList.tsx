@@ -16,15 +16,17 @@ export default async function PubList({
 }>) {
   const db = await Database.get();
   const pubAndAuthors = await Promise.all(
-    pubs.map(
-      (p) =>
-        new Promise<Readonly<{ pub: Publication; authors: Person[] }>>(
-          async (resolve) => {
-            const authors = await db.getManyPersons(p.authorIds);
-            resolve({ pub: p, authors });
-          },
-        ),
-    ),
+    pubs
+      .toSorted((a, b) => b.time.getTime() - a.time.getTime())
+      .map(
+        (p) =>
+          new Promise<Readonly<{ pub: Publication; authors: Person[] }>>(
+            async (resolve) => {
+              const authors = await db.getManyPersons(p.authorIds);
+              resolve({ pub: p, authors });
+            },
+          ),
+      ),
   );
   return (
     <div className="flex flex-col gap-4 min-w-0 w-full">
