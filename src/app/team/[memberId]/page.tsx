@@ -144,7 +144,7 @@ export default async function MemberPage({ params: { memberId } }: Params) {
               </a>
             </p>
           )}
-          {(externalLink || member.memberInfo.links.length > 0) && (
+          {(externalLink || (member.memberInfo.links && member.memberInfo.links.length > 0)) && (
             <div
               className={
                 "flex flex-row w-full flex-wrap gap-x-2 gap-y-0 " +
@@ -161,7 +161,7 @@ export default async function MemberPage({ params: { memberId } }: Params) {
                   <FontAwesomeIcon icon={faGlobe}></FontAwesomeIcon>
                 </a>
               )}
-              {member.memberInfo.links.map((l, i) =>
+              {member.memberInfo.links?.map((l, i) =>
                 l.label ? (
                   <a
                     href={l.link}

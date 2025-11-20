@@ -155,7 +155,7 @@ type MemberInfo = Omit<
   role: MemberRole;
   whenJoined: Date;
   whenLeft?: Date;
-  links: {
+  links?: {
     link: string;
     icon?: Icon;
     label?: string;
