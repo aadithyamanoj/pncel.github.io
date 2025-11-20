@@ -1,19 +1,21 @@
 import DefaultMain from "@/layouts/defaultMain";
 import DefaultMDX from "@/layouts/defaultMdx";
 import MemberCard from "./memberCard";
+import { config } from "@fortawesome/fontawesome-svg-core";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faAngleDown, faAngleUp } from "@fortawesome/free-solid-svg-icons";
+import "@fortawesome/fontawesome-svg-core/styles.css";
 import { metadataTmpl, composeFullName } from "@/data/utils";
 import { Database } from "@/data/database";
 import { Member, MemberRole } from "@/data/types";
+config.autoAddCss = false;
 
 export const metadata = {
   ...metadataTmpl,
   title: metadataTmpl.title + " | Team",
 };
 
-export default async function Team() {
-  const db = await Database.get();
-  const allMembers = await db.getManyMembers();
-
+function toOrderedGroups(members: Member[]): [MemberRole, Member[]][] {
   const group_order = [
     MemberRole.pi,
     MemberRole.postdoc,
@@ -25,7 +27,7 @@ export default async function Team() {
     MemberRole.other,
   ];
 
-  const groups = allMembers.reduce((g: Map<MemberRole, Member[]>, p) => {
+  const groups = members.reduce((g: Map<MemberRole, Member[]>, p) => {
     g.set(p.memberInfo.role, (g.get(p.memberInfo.role) || []).concat(p));
     return g;
   }, new Map<MemberRole, Member[]>());
@@ -49,6 +51,17 @@ export default async function Team() {
     },
   );
 
+  return groups_ordered;
+}
+
+export default async function Team() {
+  const db = await Database.get();
+  const allMembers = await db.getManyMembers();
+  const allActiveMembers = allMembers.filter(m => !m.memberInfo.whenLeft);
+  const allAlumni = allMembers.filter(m => !(!m.memberInfo.whenLeft));
+  const groups_ordered = toOrderedGroups(allActiveMembers);
+  const alums_ordered = toOrderedGroups(allAlumni);
+
   return (
     <DefaultMain>
       <DefaultMDX>
@@ -67,6 +80,29 @@ export default async function Team() {
             </div>
           ),
       )}
+      <div className="collapse">
+        <input type="checkbox" className="peer" />
+        <div className="collapse-title">
+          <DefaultMDX>
+            <h1>Alumni <span className="peer-checked:hidden"><FontAwesomeIcon icon={faAngleDown}></FontAwesomeIcon></span><span className="hidden peer-checked:inline-block"><FontAwesomeIcon icon={faAngleUp}></FontAwesomeIcon></span></h1>
+          </DefaultMDX>
+        </div>
+        <div className="collapse-content">
+          {alums_ordered.map(
+            ([role, members]) =>
+              members.length > 0 && (
+                <div key={role}>
+                  <p className="divider text-xl 2xl:text-2xl">{role}</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-x-4 py-4">
+                    {members.map((m) => (
+                      <MemberCard member={m} key={m.id}></MemberCard>
+                    ))}
+                  </div>
+                </div>
+              ),
+          )}
+        </div>
+      </div>
     </DefaultMain>
   );
 }

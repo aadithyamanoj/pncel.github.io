@@ -10,7 +10,7 @@ export default async function MemberCard({
   const {
     id,
     avatar,
-    memberInfo: { position },
+    memberInfo: { position, whenJoined, whenLeft },
   } = member;
   const fullname = composeFullName(member);
   const placeholder = composeAvatarPlaceholder(member);
@@ -52,6 +52,11 @@ export default async function MemberCard({
             <p className="text-sm lg:text-md text-neutral-content/60">
               {position}
             </p>
+            {/* whenLeft &&
+              <p className="text-sm lg:text-md text-neutral-content/60">
+                {`${whenJoined.getFullYear()}/${whenJoined.getMonth() + 1} - ${whenLeft.getFullYear()}/${whenLeft.getMonth() + 1}`}
+              </p>
+            */}
           </div>
         </div>
         {/*

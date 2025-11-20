@@ -47,6 +47,7 @@ docs:
     memberInfo:
       role: ug
       whenJoined: 2024-10-31
+      whenLeft: 2025-06-01
       position: Undergrad
       email: andrep24@uw.edu
       links: []
@@ -206,6 +207,7 @@ docs:
     memberInfo:
       role: ms
       whenJoined: 2024-05-01
+      whenLeft: 2025-06-01
       position: M.S. Student
       email: duyv@uw.edu
       links: []
@@ -541,6 +543,7 @@ docs:
     memberInfo:
       role: ms
       whenJoined: 2024-05-01
+      whenLeft: 2025-06-01
       position: M.S. Student
       email: ohlbur@uw.edu
       office: ECE 409
@@ -574,6 +577,7 @@ docs:
     memberInfo:
       role: ug
       whenJoined: 2024-09-26
+      whenLeft: 2025-06-01
       position: Undergrad
       email: krishpri@uw.edu
       links: []
@@ -605,6 +609,7 @@ docs:
     memberInfo:
       role: ug
       whenJoined: 2024-10-31
+      whenLeft: 2025-06-01
       position: Undergrad
       email: rubywtl@uw.edu
       links: []
