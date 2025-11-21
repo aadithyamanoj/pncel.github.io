@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 
 import { Photo } from "@/data/types";
@@ -11,11 +11,26 @@ export default function Gallery({
   specs: Photo[];
 }>) {
   const [highlight, setHighlight] = useState<Photo | undefined>(undefined);
+  const [cols, setCols] = useState<number>(1);
+
+  useEffect(() => {
+    function update() {
+      const w = window.innerWidth;
+      if (w >= 1280) setCols(3);
+      else if (w >= 480) setCols(2);
+      else setCols(1);
+    }
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, []);
 
   return (
     <>
-      <div className="mt-8 columns-1 min-[480px]:columns-2 xl:columns-3 gap-4">
-        {specs.map((photo, i) => (
+      <div className={`mt-8 columns-${cols} gap-4`}>
+        {Array.from({ length: cols }, (_, idx) =>
+          Array.from({ length: Math.ceil((specs.length-idx)/cols)}, (_, k) => specs[idx+k*cols])
+        ).flat().map((photo, i) => (
           <GalleryItem spec={photo} setHighlight={setHighlight} key={i} />
         ))}
       </div>

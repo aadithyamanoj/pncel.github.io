@@ -82,9 +82,14 @@ export default async function Team() {
       )}
       <div className="collapse">
         <input type="checkbox" className="peer" />
-        <div className="collapse-title">
+        <div className="collapse-title peer-checked:hidden">
           <DefaultMDX>
-            <h1>Alumni <span className="peer-checked:hidden"><FontAwesomeIcon icon={faAngleDown}></FontAwesomeIcon></span><span className="hidden peer-checked:inline-block"><FontAwesomeIcon icon={faAngleUp}></FontAwesomeIcon></span></h1>
+            <h1>Alumni <FontAwesomeIcon icon={faAngleDown}></FontAwesomeIcon></h1>
+          </DefaultMDX>
+        </div>
+        <div className="collapse-title hidden peer-checked:block">
+          <DefaultMDX>
+            <h1>Alumni <FontAwesomeIcon icon={faAngleUp}></FontAwesomeIcon></h1>
           </DefaultMDX>
         </div>
         <div className="collapse-content">
