@@ -472,7 +472,7 @@ if (mainOptions.command === "add-photo") {
 == Command: fix =================================================================
 ============================================================================== */
 if (mainOptions.command === "fix") {
-  await mutator.persist();
+  await mutator.persist(true);
   await flush_and_exit();
 }
 
