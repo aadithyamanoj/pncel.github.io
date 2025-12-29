@@ -37,6 +37,11 @@ export default function SelectedFontAwesomeIcon({
     faYoutube,
     faMicrochip,
     faMedal,
-  ];
-  return <FontAwesomeIcon icon={icons[icon]} />;
+  ] as const;
+  const selectedIcon = icons[icon];
+  if (!selectedIcon) {
+    console.error(`[SelectedFontAwesomeIcon] Invalid icon index: ${icon}`);
+    return null;
+  }
+  return <FontAwesomeIcon icon={selectedIcon} />;
 }

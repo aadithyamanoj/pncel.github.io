@@ -5,6 +5,7 @@ Improvement suggestions for the research group website.
 ## High Priority
 
 ### 1. Upgrade Next.js ✅
+
 - [x] Upgrade from Next.js 14.1.4 to Next.js 15.5.9 (React 19.2.3, ESLint 9.39.2)
 - [x] Review breaking changes and migration guide
 - [x] Update dynamic route params to async (Next.js 15+ requirement)
@@ -20,6 +21,7 @@ Improvement suggestions for the research group website.
 **Status:** ✅ COMPLETE. Successfully upgraded to Next.js 15.5.9 with React 19. All 56 static pages build successfully.
 
 **Key Changes Made:**
+
 - Upgraded Next.js 14.1.4 → 15.5.9
 - Upgraded React 18 → 19.2.3
 - Upgraded ESLint 8 → 9.39.2
@@ -34,12 +36,14 @@ Improvement suggestions for the research group website.
 - Added consistent FontAwesome config (`config.autoAddCss = false` + CSS imports) across components
 
 **Issue Resolved:**
+
 - The `.split()` error was caused by outdated `@fortawesome/react-fontawesome@0.2.0` not being compatible with React 19 and Next.js 15's SSG process
 - Upgrading to version 3.1.1 resolved the issue completely
 
 **Rationale:** Current version was outdated; newer versions have performance improvements and security patches.
 
 ### 2. Add Search Functionality
+
 - [ ] Implement fuzzy search using Fuse.js (already in dev dependencies)
 - [ ] Add search for team members by name/research area
 - [ ] Add search for publications by title/author/keywords
@@ -48,6 +52,7 @@ Improvement suggestions for the research group website.
 **Rationale:** With 100+ people and growing publications, search would greatly improve usability.
 
 ### 3. Performance Optimization
+
 - [ ] Enable image optimization (currently disabled for GitHub Pages)
 - [ ] Consider Next.js Image component with custom loader
 - [ ] Implement lazy loading for gallery page
@@ -56,6 +61,7 @@ Improvement suggestions for the research group website.
 **Rationale:** Improve load times and user experience.
 
 ### 4. Add Missing Documentation
+
 - [ ] Create comprehensive README.md with:
   - [ ] How to add new members/publications/photos
   - [ ] Database schema and validation rules
@@ -65,17 +71,41 @@ Improvement suggestions for the research group website.
 
 **Rationale:** Make it easier for lab members to contribute and maintain the site.
 
-### 5. Improve Type Safety
-- [ ] Add runtime schema validation for YAML files during build
-- [ ] Ensure types in [src/data/types.ts](src/data/types.ts) match YAML schemas
-- [ ] Add pre-commit hooks to validate data files
-- [ ] Create TypeScript types from JSON schemas
+### 5. Improve Type Safety ✅
+
+- [x] Add runtime schema validation for YAML files during build (Zod)
+- [x] Add validation script that runs before build
+- [x] Add pre-commit hooks to validate data files (Husky + lint-staged)
+- [x] Add stricter TypeScript compiler options
+- [x] Implement cross-reference validation between persons and publications
+
+**Status:** ✅ COMPLETE. Comprehensive type safety improvements implemented.
+
+**Key Changes Made:**
+
+- Installed Zod for runtime validation and tsx for running TypeScript scripts
+- Created [src/data/validation.ts](src/data/validation.ts) with Zod schemas matching RxDB types
+- Created [scripts/validate-yaml.ts](scripts/validate-yaml.ts) for validating all YAML files
+- Added `npm run validate-yaml` script that validates persons, publications, and photos
+- Integrated validation into build process (runs before `next build`)
+- Set up Husky + lint-staged for pre-commit validation
+- Added stricter TypeScript options: `noUncheckedIndexedAccess`, `noImplicitReturns`, `noFallthroughCasesInSwitch`
+- Validation includes cross-reference checks (e.g., publication authorIds must reference existing persons)
+- Added helpful error messages showing exactly where validation fails
+
+**Benefits:**
+
+- Data errors caught immediately at build time instead of runtime
+- Pre-commit hooks prevent invalid data from being committed
+- Cross-reference validation ensures referential integrity
+- Detailed error messages make fixing issues straightforward
 
 **Rationale:** Prevent data errors and catch issues before deployment.
 
 ## Medium Priority
 
 ### 6. SEO & Meta Tags
+
 - [ ] Add Open Graph tags for social sharing
 - [ ] Generate dynamic meta descriptions for member pages
 - [ ] Add structured data (JSON-LD) for academic profiles
@@ -85,6 +115,7 @@ Improvement suggestions for the research group website.
 **Rationale:** Improve discoverability and social media presence.
 
 ### 7. Accessibility
+
 - [ ] Add ARIA labels to navigation components
 - [ ] Ensure proper heading hierarchy throughout site
 - [ ] Add alt text validation for avatars and photos
@@ -94,6 +125,7 @@ Improvement suggestions for the research group website.
 **Rationale:** Ensure site is accessible to all users.
 
 ### 8. Git LFS for Binary Assets
+
 - [ ] Set up Git LFS for the repository
 - [ ] Migrate large images in [public/avatar/](public/avatar/) to LFS
 - [ ] Migrate photos in [public/photos/](public/photos/) to LFS
@@ -102,6 +134,7 @@ Improvement suggestions for the research group website.
 **Rationale:** Improve repository clone speed and reduce repo size.
 
 ### 9. Research Area Taxonomy
+
 - [ ] Define structured research areas/tags schema
 - [ ] Add research interests to team member profiles
 - [ ] Implement filtering by research area
@@ -111,6 +144,7 @@ Improvement suggestions for the research group website.
 **Rationale:** Help visitors find researchers by topic area.
 
 ### 10. Publication Enhancements
+
 - [ ] Integrate citation count (Google Scholar API or alternatives)
 - [ ] Add PDF download tracking/analytics
 - [ ] Implement related publications suggestions
@@ -122,6 +156,7 @@ Improvement suggestions for the research group website.
 ## Nice to Have
 
 ### 11. Dark Mode Polish
+
 - [ ] Test all components in both themes ("dim" and "emerald")
 - [ ] Ensure consistent theming across all pages
 - [ ] Add smooth theme transition animations
@@ -130,6 +165,7 @@ Improvement suggestions for the research group website.
 **Rationale:** Improve user experience with polished theme support.
 
 ### 12. RSS Feed
+
 - [ ] Auto-generate RSS feed for blogs
 - [ ] Auto-generate RSS feed for news
 - [ ] Add RSS feed links to navigation
@@ -138,6 +174,7 @@ Improvement suggestions for the research group website.
 **Rationale:** Help followers stay updated on lab activities.
 
 ### 13. Testing
+
 - [ ] Add unit tests for database utilities in [src/data/](src/data/)
 - [ ] Add E2E tests for critical user flows (Playwright or Cypress)
 - [ ] Test database CLI commands
@@ -146,6 +183,7 @@ Improvement suggestions for the research group website.
 **Rationale:** Prevent regressions and ensure code quality.
 
 ### 14. CI/CD Improvements
+
 - [ ] Add YAML schema validation in GitHub Actions
 - [ ] Automated image optimization on PR
 - [ ] Link checking for external URLs
@@ -157,6 +195,7 @@ Improvement suggestions for the research group website.
 ## Additional Ideas
 
 ### Content Features
+
 - [ ] Add research projects page with detailed project descriptions
 - [ ] Create alumni success stories section
 - [ ] Add teaching/courses section
@@ -164,6 +203,7 @@ Improvement suggestions for the research group website.
 - [ ] Add comment system for blog posts (e.g., giscus)
 
 ### Technical Improvements
+
 - [ ] Add analytics (privacy-friendly options like Plausible)
 - [ ] Implement progressive web app (PWA) features
 - [ ] Add email newsletter signup
@@ -171,6 +211,7 @@ Improvement suggestions for the research group website.
 - [ ] Add automated backups for YAML database files
 
 ### User Experience
+
 - [ ] Add breadcrumb navigation
 - [ ] Implement "Back to top" button for long pages
 - [ ] Add print-friendly styles for publications
@@ -180,6 +221,7 @@ Improvement suggestions for the research group website.
 ---
 
 **Notes:**
+
 - Priority levels are suggestions and can be adjusted based on lab needs
 - Items can be worked on in parallel by different contributors
 - Check off items as they are completed

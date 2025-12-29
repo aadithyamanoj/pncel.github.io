@@ -29,10 +29,16 @@ export default function Gallery({
     <>
       <div className={`mt-8 columns-${cols} gap-4`}>
         {Array.from({ length: cols }, (_, idx) =>
-          Array.from({ length: Math.ceil((specs.length-idx)/cols)}, (_, k) => specs[idx+k*cols])
-        ).flat().map((photo, i) => (
-          <GalleryItem spec={photo} setHighlight={setHighlight} key={i} />
-        ))}
+          Array.from(
+            { length: Math.ceil((specs.length - idx) / cols) },
+            (_, k) => specs[idx + k * cols],
+          ),
+        )
+          .flat()
+          .filter((photo): photo is Photo => photo !== undefined)
+          .map((photo, i) => (
+            <GalleryItem spec={photo} setHighlight={setHighlight} key={i} />
+          ))}
       </div>
       <dialog id="gallery-highlight" className="modal">
         <div className="modal-box max-w-full">

@@ -18,10 +18,9 @@ interface Params {
 
 export async function generateStaticParams() {
   const db = await Database.get();
-  const memberIds = (await db.getManyMembers())
-    .map((m) => ({
-      memberId: m.id,
-    }));
+  const memberIds = (await db.getManyMembers()).map((m) => ({
+    memberId: m.id,
+  }));
   return memberIds;
 }
 
@@ -53,11 +52,14 @@ export default async function PubsByMember({ params }: Params) {
       if (a.length === 0) {
         a.push({ year, pubs, idx: 0 });
       } else {
-        a.push({
-          year,
-          pubs,
-          idx: a[a.length - 1].idx + a[a.length - 1].pubs.length,
-        });
+        const lastEntry = a[a.length - 1];
+        if (lastEntry) {
+          a.push({
+            year,
+            pubs,
+            idx: lastEntry.idx + lastEntry.pubs.length,
+          });
+        }
       }
       return a;
     }, new Array<{ year: number; pubs: Publication[]; idx: number }>());
