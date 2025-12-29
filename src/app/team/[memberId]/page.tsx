@@ -1,7 +1,6 @@
 import Image from "next/image";
 import { readFile } from "fs/promises";
 import { MDXRemote } from "next-mdx-remote/rsc";
-import { useMDXComponents } from "@/mdx-components";
 import { config } from "@fortawesome/fontawesome-svg-core";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -27,9 +26,9 @@ import { Icon } from "@/data/types";
 config.autoAddCss = false;
 
 interface Params {
-  params: {
+  params: Promise<{
     memberId: string;
-  };
+  }>;
 }
 
 export async function generateStaticParams() {
@@ -40,7 +39,8 @@ export async function generateStaticParams() {
   return memberIds;
 }
 
-export async function generateMetadata({ params: { memberId } }: Params) {
+export async function generateMetadata({ params }: Params) {
+  const { memberId } = await params;
   const db = await Database.get();
   const member = await db.getMember(memberId);
   const fullname = composeFullName(member);
@@ -66,7 +66,8 @@ async function getMemberMdxSrc(memberId: string) {
   return mdxSrc;
 }
 
-export default async function MemberPage({ params: { memberId } }: Params) {
+export default async function MemberPage({ params }: Params) {
+  const { memberId } = await params;
   const db = await Database.get();
   const member = await db.getMember(memberId);
   const fullname = composeFullName(member);
@@ -206,7 +207,6 @@ export default async function MemberPage({ params: { memberId } }: Params) {
           <div className="pl-4">
             <MDXRemote
               source={mdxSrc || "This person is busy changing the world..."}
-              components={useMDXComponents({})}
             />
           </div>
         </DefaultMDX>

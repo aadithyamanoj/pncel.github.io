@@ -54,6 +54,11 @@ function marshalId(i: number): string {
 
 function unmarshalId(i: string): number {
   // base64 decoding
+  if (!i || typeof i !== 'string') {
+    throw new Error(
+      `ID unmarshalling failed. ID is undefined or not a string: ${i}`,
+    );
+  }
   if (i.length !== 6) {
     throw new Error(
       `ID unmarshalling failed. ${i} is not a 6-character base64{'_-'} string`,

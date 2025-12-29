@@ -11,7 +11,7 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
         Children.map(
           children,
           (child) => React.isValidElement(child) && child.type === "code",
-        )?.every((i) => i)
+        )?.every((i: boolean) => i)
       ) {
         return <CopyableCode>{children}</CopyableCode>;
       } else {

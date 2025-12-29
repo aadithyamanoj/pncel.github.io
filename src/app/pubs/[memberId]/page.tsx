@@ -6,22 +6,27 @@ import DefaultMDX from "@/layouts/defaultMdx";
 import DefaultMain from "@/layouts/defaultMain";
 import { composeFullName } from "@/data/utils";
 import { Database } from "@/data/database";
+import { config } from "@fortawesome/fontawesome-svg-core";
+import "@fortawesome/fontawesome-svg-core/styles.css";
+config.autoAddCss = false;
 
 interface Params {
-  params: {
+  params: Promise<{
     memberId: string;
-  };
+  }>;
 }
 
 export async function generateStaticParams() {
   const db = await Database.get();
-  const memberIds = (await db.getManyMembers()).map((m) => ({
-    memberId: m.id,
-  }));
+  const memberIds = (await db.getManyMembers())
+    .map((m) => ({
+      memberId: m.id,
+    }));
   return memberIds;
 }
 
-export async function generateMetadata({ params: { memberId } }: Params) {
+export async function generateMetadata({ params }: Params) {
+  const { memberId } = await params;
   const db = await Database.get();
   const member = await db.getMember(memberId);
   const fullname = composeFullName(member);
@@ -31,7 +36,8 @@ export async function generateMetadata({ params: { memberId } }: Params) {
   };
 }
 
-export default async function PubsByMember({ params: { memberId } }: Params) {
+export default async function PubsByMember({ params }: Params) {
+  const { memberId } = await params;
   const db = await Database.get();
   const member = await db.getMember(memberId);
   const pubs = await db.getAllPublicationsByPerson(member.id);

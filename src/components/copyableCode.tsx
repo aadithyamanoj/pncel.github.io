@@ -34,8 +34,8 @@ const childrenToString = (
 
   let text = "";
   Children.forEach(children, (child) => {
-    if (React.isValidElement(child) && child.props.children) {
-      text = text + childrenToString(child.props.children);
+    if (React.isValidElement(child) && (child.props as any).children) {
+      text = text + childrenToString((child.props as any).children);
     } else if (!React.isValidElement(child)) {
       text = text + nodeToString(child);
     }

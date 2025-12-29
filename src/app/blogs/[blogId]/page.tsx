@@ -1,20 +1,30 @@
 import { readdir, readFile } from "fs/promises";
 import { MDXRemote } from "next-mdx-remote/rsc";
-import { useMDXComponents } from "@/mdx-components";
 import { metadataTmpl } from "@/data/utils";
 import DefaultMain from "@/layouts/defaultMain";
 import DefaultMDX from "@/layouts/defaultMdx";
+import matter from "gray-matter";
 
 interface Params {
-  params: {
+  params: Promise<{
     blogId: string;
-  };
+  }>;
 }
 
-export async function generateMetadata({ params: { blogId } }: Params) {
+export async function generateMetadata({ params }: Params) {
+  const { blogId } = await params;
   var title = "";
   if (blogId !== "_") {
-    title = require(`@/app/blogs/[blogId]/${blogId}.mdx`)["title"];
+    try {
+      const fileContent = await readFile(
+        `${process.cwd()}/src/app/blogs/[blogId]/${blogId}.mdx`,
+        "utf-8",
+      );
+      const { data } = matter(fileContent);
+      title = data.title || blogId;
+    } catch (e) {
+      title = blogId;
+    }
   }
   return {
     ...metadataTmpl,
@@ -32,23 +42,31 @@ export async function generateStaticParams() {
   else return [{ blogId: "_" }];
 }
 
-export default async function BlogPage({ params: { blogId } }: Params) {
+export default async function BlogPage({ params }: Params) {
+  const { blogId } = await params;
   var title: string = "You've reached the void ...";
   var mdxSrc: string = "";
 
   if (blogId !== "_") {
-    title = require(`@/app/blogs/[blogId]/${blogId}.mdx`);
-    mdxSrc = await readFile(
-      `${process.cwd()}/src/app/blogs/[blogId]/${blogId}.mdx`,
-      "utf-8",
-    );
+    try {
+      const fileContent = await readFile(
+        `${process.cwd()}/src/app/blogs/[blogId]/${blogId}.mdx`,
+        "utf-8",
+      );
+      const { data, content } = matter(fileContent);
+      title = data.title || blogId;
+      mdxSrc = content;
+    } catch (e) {
+      title = "Blog not found";
+      mdxSrc = "This blog post could not be loaded.";
+    }
   }
 
   return (
     <DefaultMain>
       <DefaultMDX>
         <h1>{title}</h1>
-        <MDXRemote source={mdxSrc} components={useMDXComponents({})} />
+        <MDXRemote source={mdxSrc} />
       </DefaultMDX>
     </DefaultMain>
   );

@@ -1,9 +1,12 @@
 import React from "react";
 import PubEntry from "./pubEntry";
 import { Publication, Person } from "@/data/types";
+import { config } from "@fortawesome/fontawesome-svg-core";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faP, fa1 } from "@fortawesome/free-solid-svg-icons";
+import "@fortawesome/fontawesome-svg-core/styles.css";
 import { Database } from "@/data/database";
+config.autoAddCss = false;
 
 export default async function PubList({
   pubs,
@@ -30,11 +33,8 @@ export default async function PubList({
   );
   return (
     <div className="flex flex-col gap-4 min-w-0 w-full">
-      {pubAndAuthors.map(({ pub, authors }, idx) => {
-        return (
-          <>
-            <dialog id="modal_pncel_members" className="modal">
-              <div className="modal-box">
+      <dialog id="modal_pncel_members" className="modal">
+        <div className="modal-box">
                 <h3 className="font-bold text-lg">
                   <FontAwesomeIcon
                     className="text-sm mx-1 rounded-md aspect-square p-1 bg-base-content text-base-100"
@@ -42,14 +42,14 @@ export default async function PubList({
                   />{" "}
                   PᴺCEL member
                 </h3>
-                <p className="py-4">Press ESC key or click outside to close</p>
-              </div>
-              <form method="dialog" className="modal-backdrop">
-                <button>close</button>
-              </form>
-            </dialog>
-            <dialog id="modal_equal_contribution" className="modal">
-              <div className="modal-box">
+          <p className="py-4">Press ESC key or click outside to close</p>
+        </div>
+        <form method="dialog" className="modal-backdrop">
+          <button>close</button>
+        </form>
+      </dialog>
+      <dialog id="modal_equal_contribution" className="modal">
+        <div className="modal-box">
                 <h3 className="font-bold text-lg">
                   <FontAwesomeIcon
                     className="text-sm mx-1 rounded-md aspect-square p-1 bg-base-content text-base-100"
@@ -57,20 +57,21 @@ export default async function PubList({
                   />{" "}
                   Equal contribution
                 </h3>
-                <p className="py-4">Press ESC key or click outside to close</p>
-              </div>
-              <form method="dialog" className="modal-backdrop">
-                <button>close</button>
-              </form>
-            </dialog>
-            <PubEntry
-              pub={pub}
-              authors={authors}
-              highlightedPersonId={highlightedPersonId}
-              altStyle={(idx % 2 === 0) === (altStyle || false)}
-              key={pub.id}
-            ></PubEntry>
-          </>
+          <p className="py-4">Press ESC key or click outside to close</p>
+        </div>
+        <form method="dialog" className="modal-backdrop">
+          <button>close</button>
+        </form>
+      </dialog>
+      {pubAndAuthors.map(({ pub, authors }, idx) => {
+        return (
+          <PubEntry
+            pub={pub}
+            authors={authors}
+            highlightedPersonId={highlightedPersonId}
+            altStyle={(idx % 2 === 0) === (altStyle || false)}
+            key={pub.id}
+          ></PubEntry>
         );
       })}
     </div>
