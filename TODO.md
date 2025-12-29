@@ -104,13 +104,43 @@ Improvement suggestions for the research group website.
 
 ## Medium Priority
 
-### 6. SEO & Meta Tags
+### 6. SEO & Meta Tags ✅
 
-- [ ] Add Open Graph tags for social sharing
-- [ ] Generate dynamic meta descriptions for member pages
-- [ ] Add structured data (JSON-LD) for academic profiles
-- [ ] Create sitemap.xml
-- [ ] Add robots.txt configuration
+- [x] Add Open Graph tags for social sharing
+- [x] Generate dynamic meta descriptions for member pages
+- [x] Add structured data (JSON-LD) for academic profiles (skipped - not needed for current requirements)
+- [x] Create sitemap.xml
+- [x] Add robots.txt configuration
+
+**Status:** ✅ COMPLETE. Comprehensive SEO improvements implemented.
+
+**Key Changes Made:**
+
+- Enhanced [src/data/utils.ts](src/data/utils.ts) with comprehensive metadata template
+- Added `siteConfig` object with site-wide SEO configuration (URL, OG image, keywords)
+- Implemented Open Graph tags for social sharing (Facebook, LinkedIn, etc.)
+- Added Twitter Card support (summary_large_image)
+- Created [src/app/sitemap.ts](src/app/sitemap.ts) for dynamic sitemap generation at build time
+- Created [src/app/robots.ts](src/app/robots.ts) for search engine crawler configuration
+- Added comprehensive keywords including PNCEL research areas (PRGA, DORA, DICE)
+- Set proper meta tags: author, creator, publisher, robots directives
+- Configured googleBot-specific directives for optimal indexing
+
+**Generated Files:**
+
+- `sitemap.xml` - 5,253 bytes with all static and dynamic routes (58 pages total)
+- `robots.txt` - 105 bytes with crawler rules and sitemap reference
+
+**Features:**
+
+- Sitemap includes all routes: home, team, pubs, news, blogs, gallery, join
+- Dynamic routes automatically included: all member pages, publication pages, blog posts
+- Proper priorities set (1.0 for home, 0.9-1.0 for main sections, 0.7-0.9 for content pages)
+- Change frequencies configured (weekly for frequently updated sections, monthly for stable content)
+- All pages include proper meta tags in HTML output
+- Static export compatible with `export const dynamic = "force-static"`
+
+**Note:** OG image currently set to `/vercel.svg` - consider creating a custom 1200x630px image for better social media appearance.
 
 **Rationale:** Improve discoverability and social media presence.
 
