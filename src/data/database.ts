@@ -9,6 +9,7 @@ import { getRxStorageMemory } from "rxdb/plugins/storage-memory";
 import { wrappedValidateAjvStorage, getAjv } from "rxdb/plugins/validate-ajv";
 import { RxDBJsonDumpPlugin } from "rxdb/plugins/json-dump";
 import { RxDBDevModePlugin, disableWarnings } from "rxdb/plugins/dev-mode";
+import { RxDBQueryBuilderPlugin } from "rxdb/plugins/query-builder";
 import { readFile, writeFile } from "fs/promises";
 import { parse, stringify } from "yaml";
 import addFormats from "ajv-formats";
@@ -33,6 +34,7 @@ import {
 disableWarnings();
 addRxPlugin(RxDBJsonDumpPlugin);
 addRxPlugin(RxDBDevModePlugin);
+addRxPlugin(RxDBQueryBuilderPlugin);
 addFormats(getAjv());
 
 export type RxDatabase = _RxDatabase<
@@ -198,7 +200,9 @@ export class Database extends Object {
     return this._db;
   }
 
-  public static async get(): Promise<Database> {
+  public static async get(
+    ignoreSchemaHash: boolean = false,
+  ): Promise<Database> {
     if (!Database.instance) {
       Database.instance = new Promise(async (resolve, reject) => {
         try {
@@ -224,8 +228,18 @@ export class Database extends Object {
                   "utf-8",
                 )
                   .then((raw) => parse(raw))
-                  .then((data) => {
+                  .then(async (data) => {
+                    if (ignoreSchemaHash && data.schemaHash) {
+                      // Replace with the current schema hash
+                      data.schemaHash = await db.persons.schema.hash;
+                    }
                     db.persons.importJSON(data);
+                  })
+                  .catch(() => {
+                    // persons.yaml might not exist yet, that's okay
+                    console.log(
+                      "No persons.yaml found, skipping persons import",
+                    );
                   });
 
                 const pReadPublications = readFile(
@@ -233,8 +247,18 @@ export class Database extends Object {
                   "utf-8",
                 )
                   .then((raw) => parse(raw))
-                  .then((data) => {
+                  .then(async (data) => {
+                    if (ignoreSchemaHash && data.schemaHash) {
+                      // Replace with the current schema hash
+                      data.schemaHash = await db.publications.schema.hash;
+                    }
                     db.publications.importJSON(data);
+                  })
+                  .catch(() => {
+                    // pubs.yaml might not exist yet, that's okay
+                    console.log(
+                      "No pubs.yaml found, skipping publications import",
+                    );
                   });
 
                 const pReadPhotos = readFile(
@@ -242,8 +266,16 @@ export class Database extends Object {
                   "utf-8",
                 )
                   .then((raw) => parse(raw))
-                  .then((data) => {
+                  .then(async (data) => {
+                    if (ignoreSchemaHash && data.schemaHash) {
+                      // Replace with the current schema hash
+                      data.schemaHash = await db.photos.schema.hash;
+                    }
                     db.photos.importJSON(data);
+                  })
+                  .catch(() => {
+                    // photos.yaml might not exist yet, that's okay
+                    console.log("No photos.yaml found, skipping photos import");
                   });
 
                 await Promise.all([

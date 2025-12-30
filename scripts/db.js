@@ -29,6 +29,11 @@ const help_commands = {
     synopsis: "$ node /scripts/db.js fix",
     summary: "Fix temporary IDs in database files",
   },
+  "update-schema": {
+    synopsis: "$ node /scripts/db.js update-schema",
+    summary:
+      "Update database YAML files after schema changes (fixes schemaHash mismatches)",
+  },
   "add-doi": {
     synopsis: "$ node /scripts/db.js add-doi <doi> [<doi> ...]",
     summary: "Add publication(s) from doi",
@@ -138,7 +143,8 @@ async function askQuestion(question) {
 /* ==============================================================================
 == Utilities: db access =========================================================
 ============================================================================= */
-const db = await Database.get();
+const ignoreSchemaHash = mainOptions.command === "update-schema";
+const db = await Database.get(ignoreSchemaHash);
 const mutator = new DatabaseMutator(db);
 await mutator.settle();
 
@@ -473,6 +479,19 @@ if (mainOptions.command === "add-photo") {
 ============================================================================== */
 if (mainOptions.command === "fix") {
   await mutator.persist(true);
+  await flush_and_exit();
+}
+
+/* ==============================================================================
+== Command: update-schema =======================================================
+============================================================================== */
+if (mainOptions.command === "update-schema") {
+  console.log("Updating database YAML files with new schema hash...");
+
+  // Database was initialized with ignoreSchemaHash=true, now persist with new schema
+  await mutator.persist(true);
+
+  console.log("Successfully updated all database files with new schema hash");
   await flush_and_exit();
 }
 
