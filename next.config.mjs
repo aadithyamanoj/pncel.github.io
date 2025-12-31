@@ -13,7 +13,7 @@ const withMDX = createMDX({
   extension: /\.mdx?$/,
   options: {
     remarkPlugins: [],
-    rehypePlugins: ['rehype-slug'],
+    rehypePlugins: ["rehype-slug"],
   },
 });
 export default withMDX(nextConfig);
