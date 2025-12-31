@@ -16,9 +16,9 @@
     "checkJs": true
   },
   "include": [
-    "../src/data/types.ts",
-    "../src/data/database.ts",
-    "../src/data/databaseMutator.ts"
+    "../src/lib/types.ts",
+    "../src/lib/database.ts",
+    "../src/lib/databaseMutator.ts"
   ],
   "exclude": ["node_modules"]
 }

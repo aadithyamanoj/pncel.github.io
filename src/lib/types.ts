@@ -10,6 +10,7 @@ import {
   ExtractDocumentTypeFromTypedRxJsonSchema,
   RxJsonSchema,
 } from "rxdb";
+import { iconNames, type IconName } from "./icon-registry";
 
 // ==============================================================================
 // == Enums =====================================================================
@@ -46,27 +47,9 @@ export enum MemberRole {
   //   PhD>PostDoc>MS>UG>visitor
 }
 
-export enum Icon {
-  link, // faPaperPlane
-  pdf, // faFilePdf
-  video, // faVideo
-  github, // faGithub
-  website, // faGlobe
-  gscholar, // faGoogleScholar
-  orcid, // faOrcid
-  linkedin, // faLinkedin
-  twitter, // faXTwitter
-  instagram, // faInstagram
-  facebook, // faFacebook
-  youtube, // faYoutube
-  chip, // faMicrochip
-  medal, // faMedal
-  calendar, // faCalendar
-  document, // faFileLines
-  smiley, // faFaceSmile
-  graduation, // faGraduationCap
-  userplus, // faUserPlus
-}
+// Icon type is now derived from the FontAwesome icon registry
+export type { IconName };
+export { iconNames };
 
 // ==============================================================================
 // == Tag =======================================================================
@@ -80,7 +63,7 @@ const tagSchemaLiteral = {
       enum: Object.keys(TagType) as (keyof typeof TagType)[],
     },
     link: { type: "string" },
-    icon: { type: "string", enum: Object.keys(Icon) as (keyof typeof Icon)[] },
+    icon: { type: "string", enum: iconNames },
   },
   required: ["label", "type"],
 } as const;
@@ -88,13 +71,13 @@ export type TagJson = {
   label: string;
   type: keyof typeof TagType;
   link?: string;
-  icon?: keyof typeof Icon;
+  icon?: IconName;
 };
 export type Tag = {
   label: string;
   type: TagType;
   link?: string;
-  icon?: Icon;
+  icon?: IconName;
 };
 
 // ==============================================================================
@@ -133,7 +116,7 @@ const personSchemaLiteral = {
             properties: {
               icon: {
                 type: "string",
-                enum: Object.keys(Icon) as (keyof typeof Icon)[],
+                enum: iconNames,
               },
               label: { type: "string" },
               link: { type: "string" },
@@ -168,7 +151,7 @@ type MemberInfo = Omit<
   whenLeft?: Date;
   links?: {
     link: string;
-    icon?: Icon;
+    icon?: IconName;
     label?: string;
   }[];
 };
@@ -215,7 +198,7 @@ const publicationSchemaLiteral = {
           link: { type: "string" },
           icon: {
             type: "string",
-            enum: Object.keys(Icon) as (keyof typeof Icon)[],
+            enum: iconNames,
           },
         },
         required: ["label", "link"],
@@ -237,7 +220,7 @@ export type Publication = Omit<
   attachments?: {
     label: string;
     link: string;
-    icon?: Icon;
+    icon?: IconName;
   }[];
 };
 export const publicationSchema: RxJsonSchema<PublicationJson> =
@@ -311,7 +294,7 @@ const newsSchemaLiteral = {
           link: { type: "string" },
           icon: {
             type: "string",
-            enum: Object.keys(Icon) as (keyof typeof Icon)[],
+            enum: iconNames,
           },
         },
         required: ["label", "link"],
@@ -331,7 +314,7 @@ export type News = Omit<NewsJson, "time" | "type" | "tags" | "attachments"> & {
   attachments?: {
     label: string;
     link: string;
-    icon?: Icon;
+    icon?: IconName;
   }[];
 };
 export const newsSchema: RxJsonSchema<NewsJson> = newsSchemaLiteral;

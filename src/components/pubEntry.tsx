@@ -1,7 +1,7 @@
 "use client";
 import React, { useRef, useState, useContext } from "react";
 import { composeFullName } from "@/lib/utils";
-import SelectedFontAwesomeIcon from "./icon";
+import { getIcon } from "@/lib/icon-registry";
 import CopyableCode from "./copyableCode";
 import TagBadge from "./tagBadge";
 import Link from "next/link";
@@ -233,7 +233,7 @@ export default function PubEntry({
               key={i}
             >
               {attachment.icon === undefined ? undefined : (
-                <SelectedFontAwesomeIcon icon={attachment.icon} />
+                <FontAwesomeIcon icon={getIcon(attachment.icon)} />
               )}
               {attachment.label}
             </a>

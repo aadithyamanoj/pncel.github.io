@@ -16,7 +16,7 @@ import addFormats from "ajv-formats";
 import {
   TagType,
   MemberRole,
-  Icon,
+  IconName,
   Tag,
   PersonJson,
   Person,
@@ -89,7 +89,6 @@ export function encodeTag(t: Tag): TagJson {
   return {
     ...t,
     type: encodeEnum(TagType, t.type)!,
-    icon: encodeEnum(Icon, t.icon),
   };
 }
 
@@ -97,7 +96,6 @@ export function decodeTag(t: TagJson): Tag {
   return {
     ...t,
     type: decodeEnum(TagType, t.type)!,
-    icon: decodeEnum(Icon, t.icon),
   };
 }
 
@@ -113,10 +111,6 @@ export function encodePerson(p: Person): PersonJson {
             role: encodeEnum(MemberRole, m.role)!,
             whenJoined: encodeDate(m.whenJoined)!,
             whenLeft: encodeDate(m.whenLeft),
-            links: m.links?.map((l) => ({
-              ...l,
-              icon: encodeEnum(Icon, l.icon),
-            })),
           },
   };
 }
@@ -135,10 +129,6 @@ export function decodePerson(doc: RxDocument<PersonJson>): Person {
             whenJoined: new Date(m.whenJoined),
             whenLeft:
               m.whenLeft === undefined ? undefined : new Date(m.whenLeft),
-            links: m.links?.map((l) => ({
-              ...l,
-              icon: decodeEnum(Icon, l.icon),
-            })),
           },
   };
 }
@@ -148,10 +138,6 @@ export function encodePublication(p: Publication): PublicationJson {
     ...p,
     time: encodeDate(p.time)!,
     tags: p.tags?.map(encodeTag),
-    attachments: p.attachments?.map((a) => ({
-      ...a,
-      icon: encodeEnum(Icon, a.icon),
-    })),
   };
 }
 
@@ -163,10 +149,8 @@ export function decodePublication(
     ...p,
     time: new Date(p.time),
     tags: p.tags?.map(decodeTag),
-    attachments: p.attachments?.map((a) => ({
-      ...a,
-      icon: decodeEnum(Icon, a.icon),
-    })),
+    attachments: p.attachments,
+    // icon is already a string (IconName), no conversion needed
   };
 }
 
@@ -191,10 +175,6 @@ export function encodeNews(n: News): NewsJson {
     time: encodeDate(n.time)!,
     type: encodeEnum(NewsType, n.type),
     tags: n.tags?.map(encodeTag),
-    attachments: n.attachments?.map((a) => ({
-      ...a,
-      icon: encodeEnum(Icon, a.icon),
-    })),
   };
 }
 
@@ -205,10 +185,6 @@ export function decodeNews(doc: RxDocument<NewsJson>): News {
     time: new Date(n.time),
     type: decodeEnum(NewsType, n.type),
     tags: n.tags?.map(decodeTag),
-    attachments: n.attachments?.map((a) => ({
-      ...a,
-      icon: decodeEnum(Icon, a.icon),
-    })),
   };
 }
 

@@ -1,10 +1,11 @@
 "use client";
 import React, { useContext } from "react";
-import SelectedFontAwesomeIcon from "./icon";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import TagBadge from "./tagBadge";
 import { processContent } from "@/lib/processContent";
 import { config } from "@fortawesome/fontawesome-svg-core";
-import { News, Person, Icon, TagType, NewsType } from "@/lib/types";
+import { News, Person, TagType, NewsType, type IconName } from "@/lib/types";
+import { getIcon } from "@/lib/icon-registry";
 import DataContext from "@/app/context";
 config.autoAddCss = false;
 
@@ -35,18 +36,18 @@ export default function NewsEntry({
   };
 
   // Get icon for news type
-  const getNewsTypeIcon = (type?: NewsType): Icon | undefined => {
+  const getNewsTypeIcon = (type?: NewsType): IconName | undefined => {
     switch (type) {
       case NewsType.award:
-        return Icon.medal;
+        return "medal";
       case NewsType.publication:
-        return Icon.document;
+        return "file-lines";
       case NewsType.tapeout:
-        return Icon.chip;
+        return "microchip";
       case NewsType.newmember:
-        return Icon.userplus;
+        return "user-plus";
       case NewsType.graduation:
-        return Icon.graduation;
+        return "graduation-cap";
       default:
         return undefined;
     }
@@ -65,7 +66,7 @@ export default function NewsEntry({
           tag={{
             label: formatDate(news.time),
             type: TagType.venue, // reuse venue tag's styling
-            icon: Icon.calendar,
+            icon: "calendar",
           }}
         />
       </div>
@@ -75,7 +76,7 @@ export default function NewsEntry({
         <p className="text-lg 2xl:text-xl">
           {getNewsTypeIcon(news.type) !== undefined && (
             <span className="mr-2">
-              <SelectedFontAwesomeIcon icon={getNewsTypeIcon(news.type)!} />
+              <FontAwesomeIcon icon={getIcon(getNewsTypeIcon(news.type)!)} />
             </span>
           )}
           <span
@@ -109,7 +110,7 @@ export default function NewsEntry({
                 key={i}
               >
                 {attachment.icon === undefined ? undefined : (
-                  <SelectedFontAwesomeIcon icon={attachment.icon} />
+                  <FontAwesomeIcon icon={getIcon(attachment.icon)} />
                 )}
                 {attachment.label}
               </a>

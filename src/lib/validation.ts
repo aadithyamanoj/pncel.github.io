@@ -5,6 +5,7 @@
  */
 
 import { z } from "zod";
+import { iconNames } from "./icon-registry";
 
 // ==============================================================================
 // == Enums =====================================================================
@@ -25,22 +26,16 @@ export const MemberRoleSchema = z.enum([
   "visitor",
 ]);
 
-export const IconSchema = z.enum([
-  "link",
-  "pdf",
-  "video",
-  "github",
-  "website",
-  "gscholar",
-  "orcid",
-  "linkedin",
-  "twitter",
-  "instagram",
-  "facebook",
-  "youtube",
-  "chip",
-  "medal",
-]);
+// Dynamic icon schema based on available FontAwesome icons
+// Uses runtime validation since iconNames is dynamically generated
+export const IconSchema = z.string().superRefine((val, ctx) => {
+  if (!iconNames.includes(val)) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: `Invalid icon name "${val}". Must be a valid FontAwesome icon name (e.g., "github", "linkedin", "file-pdf", etc.)`,
+    });
+  }
+});
 
 // ==============================================================================
 // == Tag =======================================================================

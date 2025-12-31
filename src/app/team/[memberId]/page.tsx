@@ -21,8 +21,7 @@ import {
   composeFullName,
   composeAvatarPlaceholder,
 } from "@/lib/utils";
-import SelectedFontAwesomeIcon from "@/components/icon";
-import { Icon } from "@/lib/types";
+import { getIcon } from "@/lib/icon-registry";
 config.autoAddCss = false;
 
 interface Params {
@@ -173,11 +172,11 @@ export default async function MemberPage({ params }: Params) {
                     data-tip={l.label}
                     key={i}
                   >
-                    <SelectedFontAwesomeIcon icon={l.icon || Icon.link} />
+                    <FontAwesomeIcon icon={getIcon(l.icon || "paper-plane")} />
                   </a>
                 ) : (
                   <a href={l.link} target="_blank" key={i}>
-                    <SelectedFontAwesomeIcon icon={l.icon || Icon.link} />
+                    <FontAwesomeIcon icon={getIcon(l.icon || "paper-plane")} />
                   </a>
                 ),
               )}
