@@ -1,6 +1,6 @@
 "use client";
 import React, { useRef, useState, useContext } from "react";
-import { composeFullName } from "@/data/utils";
+import { composeFullName } from "@/lib/utils";
 import SelectedFontAwesomeIcon from "./icon";
 import CopyableCode from "./copyableCode";
 import TagBadge from "./tagBadge";
@@ -16,7 +16,7 @@ import {
   fa1,
 } from "@fortawesome/free-solid-svg-icons";
 import sanitizeHtml from "sanitize-html";
-import { Publication, Person } from "@/data/types";
+import { Publication, Person } from "@/lib/types";
 import DataContext from "@/app/context";
 config.autoAddCss = false;
 

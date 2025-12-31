@@ -1,6 +1,8 @@
-import { metadataTmpl } from "@/data/utils";
+import { metadataTmpl } from "@/lib/utils";
 import DefaultMain from "@/layouts/defaultMain";
 import DefaultMDX from "@/layouts/defaultMdx";
+import NewsList from "@/components/newsList";
+import { Database } from "@/lib/database";
 
 export const metadata = {
   ...metadataTmpl,
@@ -8,12 +10,16 @@ export const metadata = {
 };
 
 export default async function News() {
+  const db = await Database.get();
+  const allNews = await db.getManyNews();
+
   return (
     <DefaultMain>
       <DefaultMDX>
-        <h1>News</h1>
-        <p>Under construction...</p>
+        <h1 className="lg:pb-4">News</h1>
+        {allNews.length == 0 && <p>No news items yet. Check back soon!</p>}
       </DefaultMDX>
+      {allNews.length > 0 && <NewsList news={allNews} />}
     </DefaultMain>
   );
 }

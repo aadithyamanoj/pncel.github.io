@@ -1,8 +1,8 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { composeFullName, composeAvatarPlaceholder } from "@/data/utils";
-import { Member } from "@/data/types";
+import { composeFullName, composeAvatarPlaceholder } from "@/lib/utils";
+import { Member } from "@/lib/types";
 
 export default async function MemberCard({
   member,

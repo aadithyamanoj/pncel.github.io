@@ -1,11 +1,11 @@
 import React from "react";
 import PubEntry from "./pubEntry";
-import { Publication, Person } from "@/data/types";
+import { Publication, Person } from "@/lib/types";
 import { config } from "@fortawesome/fontawesome-svg-core";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faP, fa1 } from "@fortawesome/free-solid-svg-icons";
 import "@fortawesome/fontawesome-svg-core/styles.css";
-import { Database } from "@/data/database";
+import { Database } from "@/lib/database";
 config.autoAddCss = false;
 
 export default async function PubList({
@@ -35,13 +35,13 @@ export default async function PubList({
     <div className="flex flex-col gap-4 min-w-0 w-full">
       <dialog id="modal_pncel_members" className="modal">
         <div className="modal-box">
-                <h3 className="font-bold text-lg">
-                  <FontAwesomeIcon
-                    className="text-sm mx-1 rounded-md aspect-square p-1 bg-base-content text-base-100"
-                    icon={faP}
-                  />{" "}
-                  PᴺCEL member
-                </h3>
+          <h3 className="font-bold text-lg">
+            <FontAwesomeIcon
+              className="text-sm mx-1 rounded-md aspect-square p-1 bg-base-content text-base-100"
+              icon={faP}
+            />{" "}
+            PᴺCEL member
+          </h3>
           <p className="py-4">Press ESC key or click outside to close</p>
         </div>
         <form method="dialog" className="modal-backdrop">
@@ -50,13 +50,13 @@ export default async function PubList({
       </dialog>
       <dialog id="modal_equal_contribution" className="modal">
         <div className="modal-box">
-                <h3 className="font-bold text-lg">
-                  <FontAwesomeIcon
-                    className="text-sm mx-1 rounded-md aspect-square p-1 bg-base-content text-base-100"
-                    icon={fa1}
-                  />{" "}
-                  Equal contribution
-                </h3>
+          <h3 className="font-bold text-lg">
+            <FontAwesomeIcon
+              className="text-sm mx-1 rounded-md aspect-square p-1 bg-base-content text-base-100"
+              icon={fa1}
+            />{" "}
+            Equal contribution
+          </h3>
           <p className="py-4">Press ESC key or click outside to close</p>
         </div>
         <form method="dialog" className="modal-backdrop">

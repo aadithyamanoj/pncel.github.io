@@ -23,6 +23,12 @@ export enum TagType {
 
 export enum NewsType {
   other,
+  award,
+  publication,
+  presentation,
+  tapeout,
+  newmember,
+  graduation,
 }
 
 export enum MemberRole {
@@ -55,6 +61,11 @@ export enum Icon {
   youtube, // faYoutube
   chip, // faMicrochip
   medal, // faMedal
+  calendar, // faCalendar
+  document, // faFileLines
+  smiley, // faFaceSmile
+  graduation, // faGraduationCap
+  userplus, // faUserPlus
 }
 
 // ==============================================================================
@@ -260,3 +271,67 @@ export type PhotoJson = ExtractDocumentTypeFromTypedRxJsonSchema<
 >;
 export type Photo = Omit<PhotoJson, "time"> & { time: Date };
 export const photoSchema: RxJsonSchema<PhotoJson> = photoSchemaLiteral;
+
+// ==============================================================================
+// == News ======================================================================
+// ==============================================================================
+const newsSchemaLiteral = {
+  title: "news schema",
+  description: "describes a news item",
+  version: 0,
+  primaryKey: "id",
+  type: "object",
+  properties: {
+    id: { type: "string", maxLength: 32 },
+    news: { type: "string" },
+    details: { type: "string" },
+    time: { type: "string", format: "date" },
+    type: {
+      type: "string",
+      enum: Object.keys(NewsType) as (keyof typeof NewsType)[],
+    },
+    relatedPersonIds: {
+      type: "array",
+      items: { type: "string" },
+    },
+    relatedPubIds: {
+      type: "array",
+      items: { type: "string" },
+    },
+    tags: {
+      type: "array",
+      items: tagSchemaLiteral,
+    },
+    attachments: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          label: { type: "string" },
+          link: { type: "string" },
+          icon: {
+            type: "string",
+            enum: Object.keys(Icon) as (keyof typeof Icon)[],
+          },
+        },
+        required: ["label", "link"],
+      },
+    },
+  },
+  required: ["id", "news", "time"],
+} as const;
+const newsSchemaTyped = toTypedRxJsonSchema(newsSchemaLiteral);
+export type NewsJson = ExtractDocumentTypeFromTypedRxJsonSchema<
+  typeof newsSchemaTyped
+>;
+export type News = Omit<NewsJson, "time" | "type" | "tags" | "attachments"> & {
+  time: Date;
+  type?: NewsType;
+  tags?: Tag[];
+  attachments?: {
+    label: string;
+    link: string;
+    icon?: Icon;
+  }[];
+};
+export const newsSchema: RxJsonSchema<NewsJson> = newsSchemaLiteral;

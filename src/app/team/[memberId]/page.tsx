@@ -15,14 +15,14 @@ import PubList, { PubListFootnote } from "@/components/pubList";
 import DefaultMDX from "@/layouts/defaultMdx";
 import DefaultMain from "@/layouts/defaultMain";
 import Link from "next/link";
-import { Database } from "@/data/database";
+import { Database } from "@/lib/database";
 import {
   metadataTmpl,
   composeFullName,
   composeAvatarPlaceholder,
-} from "@/data/utils";
+} from "@/lib/utils";
 import SelectedFontAwesomeIcon from "@/components/icon";
-import { Icon } from "@/data/types";
+import { Icon } from "@/lib/types";
 config.autoAddCss = false;
 
 interface Params {
@@ -145,7 +145,9 @@ export default async function MemberPage({ params }: Params) {
               </a>
             </p>
           )}
-          {(externalLink || (member.memberInfo.links && member.memberInfo.links.length > 0)) && (
+          {(externalLink ||
+            (member.memberInfo.links &&
+              member.memberInfo.links.length > 0)) && (
             <div
               className={
                 "flex flex-row w-full flex-wrap gap-x-2 gap-y-0 " +

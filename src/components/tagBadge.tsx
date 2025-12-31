@@ -1,5 +1,5 @@
 import { config } from "@fortawesome/fontawesome-svg-core";
-import { TagType, Tag } from "@/data/types";
+import { TagType, Tag } from "@/lib/types";
 import React from "react";
 import SelectedFontAwesomeIcon from "./icon";
 config.autoAddCss = false;
@@ -11,7 +11,9 @@ export default function TagBadge({ tag }: Readonly<{ tag: Tag }>) {
         "badge " +
         (tag.type === TagType.award
           ? "badge-success "
-          : "bg-base-content text-base-100 ") +
+          : tag.type === TagType.venue
+            ? "bg-base-content text-base-100 font-semibold "
+            : "badge-outline badge-secondary ") +
         (tag.type === TagType.venue ? "rounded-md " : " ")
       }
     >
@@ -19,7 +21,7 @@ export default function TagBadge({ tag }: Readonly<{ tag: Tag }>) {
         {tag.icon === undefined ? undefined : (
           <SelectedFontAwesomeIcon icon={tag.icon} />
         )}
-        {tag.label}
+        {` ${tag.label}`}
       </a>
     </div>
   );

@@ -5,6 +5,11 @@ import {
   faVideo,
   faMicrochip,
   faMedal,
+  faCalendar,
+  faFileLines,
+  faFaceSmile,
+  faGraduationCap,
+  faUserPlus,
 } from "@fortawesome/free-solid-svg-icons";
 import {
   faLinkedin,
@@ -16,7 +21,7 @@ import {
   faOrcid,
   faYoutube,
 } from "@fortawesome/free-brands-svg-icons";
-import { Icon } from "@/data/types";
+import { Icon } from "@/lib/types";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 export default function SelectedFontAwesomeIcon({
@@ -37,6 +42,11 @@ export default function SelectedFontAwesomeIcon({
     faYoutube,
     faMicrochip,
     faMedal,
+    faCalendar,
+    faFileLines,
+    faFaceSmile,
+    faGraduationCap,
+    faUserPlus,
   ] as const;
   const selectedIcon = icons[icon];
   if (!selectedIcon) {

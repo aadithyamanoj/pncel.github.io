@@ -4,7 +4,7 @@ Improvement suggestions for the research group website.
 
 ## High Priority
 
-### 1. Upgrade Next.js ✅
+### Upgrade Next.js ✅
 
 - [x] Upgrade from Next.js 14.1.4 to Next.js 15.5.9 (React 19.2.3, ESLint 9.39.2)
 - [x] Review breaking changes and migration guide
@@ -42,7 +42,7 @@ Improvement suggestions for the research group website.
 
 **Rationale:** Current version was outdated; newer versions have performance improvements and security patches.
 
-### 2. Add Search Functionality
+### Add Search Functionality
 
 - [ ] Implement fuzzy search using Fuse.js (already in dev dependencies)
 - [ ] Add search for team members by name/research area
@@ -51,7 +51,7 @@ Improvement suggestions for the research group website.
 
 **Rationale:** With 100+ people and growing publications, search would greatly improve usability.
 
-### 3. Performance Optimization
+### Performance Optimization
 
 - [ ] Enable image optimization (currently disabled for GitHub Pages)
 - [ ] Consider Next.js Image component with custom loader
@@ -60,7 +60,7 @@ Improvement suggestions for the research group website.
 
 **Rationale:** Improve load times and user experience.
 
-### 4. Add Missing Documentation
+### Add Missing Documentation
 
 - [ ] Create comprehensive README.md with:
   - [ ] How to add new members/publications/photos
@@ -71,7 +71,7 @@ Improvement suggestions for the research group website.
 
 **Rationale:** Make it easier for lab members to contribute and maintain the site.
 
-### 5. Improve Type Safety ✅
+### Improve Type Safety ✅
 
 - [x] Add runtime schema validation for YAML files during build (Zod)
 - [x] Add validation script that runs before build
@@ -104,7 +104,7 @@ Improvement suggestions for the research group website.
 
 ## Medium Priority
 
-### 6. SEO & Meta Tags ✅
+### SEO & Meta Tags ✅
 
 - [x] Add Open Graph tags for social sharing
 - [x] Generate dynamic meta descriptions for member pages
@@ -144,7 +144,7 @@ Improvement suggestions for the research group website.
 
 **Rationale:** Improve discoverability and social media presence.
 
-### 7. Accessibility
+### Accessibility
 
 - [ ] Add ARIA labels to navigation components
 - [ ] Ensure proper heading hierarchy throughout site
@@ -154,7 +154,7 @@ Improvement suggestions for the research group website.
 
 **Rationale:** Ensure site is accessible to all users.
 
-### 8. Git LFS for Binary Assets
+### Git LFS for Binary Assets
 
 - [ ] Set up Git LFS for the repository
 - [ ] Migrate large images in [public/avatar/](public/avatar/) to LFS
@@ -163,7 +163,7 @@ Improvement suggestions for the research group website.
 
 **Rationale:** Improve repository clone speed and reduce repo size.
 
-### 9. Research Area Taxonomy
+### Research Area Taxonomy
 
 - [ ] Define structured research areas/tags schema
 - [ ] Add research interests to team member profiles
@@ -173,7 +173,7 @@ Improvement suggestions for the research group website.
 
 **Rationale:** Help visitors find researchers by topic area.
 
-### 10. Publication Enhancements
+### Publication Enhancements
 
 - [ ] Integrate citation count (Google Scholar API or alternatives)
 - [ ] Add PDF download tracking/analytics
@@ -183,9 +183,27 @@ Improvement suggestions for the research group website.
 
 **Rationale:** Enhance the publications section with more useful features.
 
+### Complete NEWS Page with NewsList Component
+
+- [x] Design and implement NewsList component
+- [x] Add news data schema and YAML structure
+- [x] Implement NewsEntry component for individual news items
+- [x] Update news page to display news items
+- [x] Add database support for news collection with encoder/decoder
+- [ ] Add filtering/sorting capabilities (by date, project, member)
+- [ ] Implement pagination or infinite scroll for news items
+- [ ] Integrate NewsList on home page to show latest news
+- [ ] Enable NewsList on individual project pages (filtered by project)
+- [ ] Enable NewsList on individual member pages (filtered by member)
+- [ ] Create news item detail pages
+
+**Status:** Core components implemented. NewsList and NewsEntry components created based on PubList/PubEntry patterns. News schema added to types.ts with support for relatedPersonIds and relatedPubIds for filtering. Database methods added: getManyNews(), getNews(), getAllNewsByPerson(), getAllNewsByPublication(). Ready to add sample data and implement filtering on member/project pages.
+
+**Rationale:** Centralize news display functionality with a reusable component that can show all news, latest news, or filtered news by project/member across different pages.
+
 ## Nice to Have
 
-### 11. Dark Mode Polish
+### Dark Mode Polish
 
 - [ ] Test all components in both themes ("dim" and "emerald")
 - [ ] Ensure consistent theming across all pages
@@ -194,7 +212,7 @@ Improvement suggestions for the research group website.
 
 **Rationale:** Improve user experience with polished theme support.
 
-### 12. RSS Feed
+### RSS Feed
 
 - [ ] Auto-generate RSS feed for blogs
 - [ ] Auto-generate RSS feed for news
@@ -203,7 +221,7 @@ Improvement suggestions for the research group website.
 
 **Rationale:** Help followers stay updated on lab activities.
 
-### 13. Testing
+### Testing
 
 - [ ] Add unit tests for database utilities in [src/data/](src/data/)
 - [ ] Add E2E tests for critical user flows (Playwright or Cypress)
@@ -212,7 +230,7 @@ Improvement suggestions for the research group website.
 
 **Rationale:** Prevent regressions and ensure code quality.
 
-### 14. CI/CD Improvements
+### CI/CD Improvements
 
 - [ ] Add YAML schema validation in GitHub Actions
 - [ ] Automated image optimization on PR

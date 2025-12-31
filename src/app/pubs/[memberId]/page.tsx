@@ -1,11 +1,11 @@
 import Link from "next/link";
 import PubList, { PubListFootnote } from "@/components/pubList";
-import { metadataTmpl } from "@/data/utils";
-import { Publication } from "@/data/types";
+import { metadataTmpl } from "@/lib/utils";
+import { Publication } from "@/lib/types";
 import DefaultMDX from "@/layouts/defaultMdx";
 import DefaultMain from "@/layouts/defaultMain";
-import { composeFullName } from "@/data/utils";
-import { Database } from "@/data/database";
+import { composeFullName } from "@/lib/utils";
+import { Database } from "@/lib/database";
 import { config } from "@fortawesome/fontawesome-svg-core";
 import "@fortawesome/fontawesome-svg-core/styles.css";
 config.autoAddCss = false;

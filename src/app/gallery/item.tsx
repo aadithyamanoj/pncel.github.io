@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useContext } from "react";
 
 import DataContext from "@/app/context";
-import { Photo } from "@/data/types";
+import { Photo } from "@/lib/types";
 
 export default function GalleryItem({
   spec,

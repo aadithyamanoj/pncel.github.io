@@ -54,7 +54,7 @@ function marshalId(i: number): string {
 
 function unmarshalId(i: string): number {
   // base64 decoding
-  if (!i || typeof i !== 'string') {
+  if (!i || typeof i !== "string") {
     throw new Error(
       `ID unmarshalling failed. ID is undefined or not a string: ${i}`,
     );

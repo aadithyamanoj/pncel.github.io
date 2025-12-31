@@ -16,7 +16,7 @@ import {
   validatePersonsYaml,
   validatePublicationsYaml,
   validatePhotosYaml,
-} from "../src/data/validation";
+} from "../src/lib/validation";
 
 interface ValidationResult {
   file: string;

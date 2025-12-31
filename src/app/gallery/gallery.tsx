@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 
-import { Photo } from "@/data/types";
+import { Photo } from "@/lib/types";
 import GalleryItem from "@/app/gallery/item";
 
 export default function Gallery({

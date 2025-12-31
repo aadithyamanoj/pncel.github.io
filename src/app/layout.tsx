@@ -1,7 +1,7 @@
 import React from "react";
 import type { Metadata } from "next";
 import "./globals.css";
-import { metadataTmpl } from "@/data/utils";
+import { metadataTmpl } from "@/lib/utils";
 
 import NavAndDrawer from "./navAndDrawer";
 import { ContextProvider } from "./context";

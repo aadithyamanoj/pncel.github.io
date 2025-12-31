@@ -1,0 +1,20 @@
+name: news
+schemaHash: dfc114ab6a65e6432e8e80edaa3158b76e528e9eb7b168479d4cf3e4c4d2a047
+docs:
+  - id: "1"
+    news: "`pncel.init();`"
+    time: 2024-09-16
+    _meta:
+      lwt: 1767131581109.03
+    _deleted: false
+  - id: "2"
+    news: Welcome our first PhD cohort, @jiayi, @jingqun, @darren, and @zhichen!
+    time: 2024-09-16
+    type: newmember
+    relatedPersonIds:
+      - jingqun
+      - darren
+      - zhichen
+    _meta:
+      lwt: 1767131581109.03
+    _deleted: false

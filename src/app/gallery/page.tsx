@@ -1,6 +1,6 @@
-import { Database } from "@/data/database";
+import { Database } from "@/lib/database";
 import Gallery from "@/app/gallery/gallery";
-import { metadataTmpl } from "@/data/utils";
+import { metadataTmpl } from "@/lib/utils";
 import DefaultMain from "@/layouts/defaultMain";
 import DefaultMDX from "@/layouts/defaultMdx";
 

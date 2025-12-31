@@ -1,6 +1,6 @@
 import { readdir, readFile } from "fs/promises";
 import { MDXRemote } from "next-mdx-remote/rsc";
-import { metadataTmpl } from "@/data/utils";
+import { metadataTmpl } from "@/lib/utils";
 import DefaultMain from "@/layouts/defaultMain";
 import DefaultMDX from "@/layouts/defaultMdx";
 import matter from "gray-matter";

@@ -1,9 +1,9 @@
 import PubList, { PubListFootnote } from "@/components/pubList";
-import { metadataTmpl } from "@/data/utils";
+import { metadataTmpl } from "@/lib/utils";
 import DefaultMDX from "@/layouts/defaultMdx";
 import DefaultMain from "@/layouts/defaultMain";
-import { Publication } from "@/data/types";
-import { Database } from "@/data/database";
+import { Publication } from "@/lib/types";
+import { Database } from "@/lib/database";
 
 export const metadata = {
   ...metadataTmpl,

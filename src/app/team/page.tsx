@@ -5,9 +5,9 @@ import { config } from "@fortawesome/fontawesome-svg-core";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAngleDown, faAngleUp } from "@fortawesome/free-solid-svg-icons";
 import "@fortawesome/fontawesome-svg-core/styles.css";
-import { metadataTmpl, composeFullName } from "@/data/utils";
-import { Database } from "@/data/database";
-import { Member, MemberRole } from "@/data/types";
+import { metadataTmpl, composeFullName } from "@/lib/utils";
+import { Database } from "@/lib/database";
+import { Member, MemberRole } from "@/lib/types";
 config.autoAddCss = false;
 
 export const metadata = {
@@ -57,8 +57,8 @@ function toOrderedGroups(members: Member[]): [MemberRole, Member[]][] {
 export default async function Team() {
   const db = await Database.get();
   const allMembers = await db.getManyMembers();
-  const allActiveMembers = allMembers.filter(m => !m.memberInfo.whenLeft);
-  const allAlumni = allMembers.filter(m => !(!m.memberInfo.whenLeft));
+  const allActiveMembers = allMembers.filter((m) => !m.memberInfo.whenLeft);
+  const allAlumni = allMembers.filter((m) => !!m.memberInfo.whenLeft);
   const groups_ordered = toOrderedGroups(allActiveMembers);
   const alums_ordered = toOrderedGroups(allAlumni);
 
@@ -84,12 +84,16 @@ export default async function Team() {
         <input type="checkbox" className="peer" />
         <div className="collapse-title peer-checked:hidden">
           <DefaultMDX>
-            <h1>Alumni <FontAwesomeIcon icon={faAngleDown}></FontAwesomeIcon></h1>
+            <h1>
+              Alumni <FontAwesomeIcon icon={faAngleDown}></FontAwesomeIcon>
+            </h1>
           </DefaultMDX>
         </div>
         <div className="collapse-title hidden peer-checked:block">
           <DefaultMDX>
-            <h1>Alumni <FontAwesomeIcon icon={faAngleUp}></FontAwesomeIcon></h1>
+            <h1>
+              Alumni <FontAwesomeIcon icon={faAngleUp}></FontAwesomeIcon>
+            </h1>
           </DefaultMDX>
         </div>
         <div className="collapse-content">

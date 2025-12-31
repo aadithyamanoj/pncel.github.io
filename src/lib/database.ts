@@ -29,6 +29,10 @@ import {
   Photo,
   photoSchema,
   TagJson,
+  NewsType,
+  NewsJson,
+  News,
+  newsSchema,
 } from "./types";
 
 disableWarnings();
@@ -42,6 +46,7 @@ export type RxDatabase = _RxDatabase<
     persons: RxCollection<PersonJson>;
     publications: RxCollection<PublicationJson>;
     photos: RxCollection<PhotoJson>;
+    news: RxCollection<NewsJson>;
   }>
 >;
 
@@ -180,6 +185,33 @@ export function decodePhoto(doc: RxDocument<PhotoJson>): Photo {
   };
 }
 
+export function encodeNews(n: News): NewsJson {
+  return {
+    ...n,
+    time: encodeDate(n.time)!,
+    type: encodeEnum(NewsType, n.type),
+    tags: n.tags?.map(encodeTag),
+    attachments: n.attachments?.map((a) => ({
+      ...a,
+      icon: encodeEnum(Icon, a.icon),
+    })),
+  };
+}
+
+export function decodeNews(doc: RxDocument<NewsJson>): News {
+  const n = doc.toJSON() as NewsJson;
+  return {
+    ...n,
+    time: new Date(n.time),
+    type: decodeEnum(NewsType, n.type),
+    tags: n.tags?.map(decodeTag),
+    attachments: n.attachments?.map((a) => ({
+      ...a,
+      icon: decodeEnum(Icon, a.icon),
+    })),
+  };
+}
+
 // ==============================================================================
 // == Database Class ============================================================
 // ==============================================================================
@@ -219,6 +251,7 @@ export class Database extends Object {
                   persons: { schema: personSchema },
                   publications: { schema: publicationSchema },
                   photos: { schema: photoSchema },
+                  news: { schema: newsSchema },
                 });
                 return db;
               })
@@ -278,10 +311,28 @@ export class Database extends Object {
                     console.log("No photos.yaml found, skipping photos import");
                   });
 
+                const pReadNews = readFile(
+                  `${process.cwd()}/public/database/news.yaml`,
+                  "utf-8",
+                )
+                  .then((raw) => parse(raw))
+                  .then(async (data) => {
+                    if (ignoreSchemaHash && data.schemaHash) {
+                      // Replace with the current schema hash
+                      data.schemaHash = await db.news.schema.hash;
+                    }
+                    db.news.importJSON(data);
+                  })
+                  .catch(() => {
+                    // news.yaml might not exist yet, that's okay
+                    console.log("No news.yaml found, skipping news import");
+                  });
+
                 await Promise.all([
                   pReadPersons,
                   pReadPublications,
                   pReadPhotos,
+                  pReadNews,
                 ]);
                 return db;
               }),
@@ -358,6 +409,12 @@ export class Database extends Object {
     await writeFile(
       `${process.cwd()}/public/database/photos.yaml`,
       stringify(photosJson),
+    );
+
+    const newsJson = await this.db.news.exportJSON();
+    await writeFile(
+      `${process.cwd()}/public/database/news.yaml`,
+      stringify(newsJson),
     );
   }
 
@@ -522,6 +579,63 @@ export class Database extends Object {
       const photoMap = await this.db.photos.findByIds(photoIds).exec();
       return Array.from(photoMap.values()).map(decodePhoto);
     }
+  }
+
+  public async getManyNews(
+    newsIds?: string[],
+    limit?: number,
+  ): Promise<News[]> {
+    if (!newsIds) {
+      let query = this.db.news.find().sort({ time: "desc" });
+      if (limit !== undefined) {
+        query = query.limit(limit);
+      }
+      return (await query.exec()).map(decodeNews);
+    } else {
+      const newsMap = await this.db.news.findByIds(newsIds).exec();
+      let news = Array.from(newsMap.values()).map(decodeNews);
+      news.sort((a, b) => b.time.getTime() - a.time.getTime());
+      if (limit !== undefined) {
+        news = news.slice(0, limit);
+      }
+      return news;
+    }
+  }
+
+  public async getNews(newsId: string): Promise<News> {
+    const news = await this.db.news
+      .findOne({ selector: { id: { $eq: newsId } } })
+      .exec();
+    if (news) {
+      return decodeNews(news);
+    } else {
+      throw new Error(`No news found id=${newsId}`);
+    }
+  }
+
+  public async getAllNewsByPerson(
+    personId: string,
+    limit?: number,
+  ): Promise<News[]> {
+    let query = this.db.news
+      .find({ selector: { relatedPersonIds: { $eq: personId } } })
+      .sort({ time: "desc" });
+    if (limit !== undefined) {
+      query = query.limit(limit);
+    }
+    const news = await query.exec();
+    return news.map(decodeNews);
+  }
+
+  public async getAllNewsByPub(pubId: string, limit?: number): Promise<News[]> {
+    let query = this.db.news
+      .find({ selector: { relatedPubIds: { $eq: pubId } } })
+      .sort({ time: "desc" });
+    if (limit !== undefined) {
+      query = query.limit(limit);
+    }
+    const news = await query.exec();
+    return news.map(decodeNews);
   }
 
   // --------------------------------------------------------------------------
