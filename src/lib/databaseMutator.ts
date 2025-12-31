@@ -8,14 +8,18 @@ import {
   decodePublication,
   encodePhoto,
   decodePhoto,
+  encodeNews,
+  decodeNews,
 } from "./database";
 import {
   Person,
   Publication,
   Photo,
+  News,
   PersonJson,
   PublicationJson,
   PhotoJson,
+  NewsJson,
 } from "./types";
 
 addRxPlugin(RxDBCleanupPlugin);
@@ -196,6 +200,7 @@ export class DatabaseMutator extends Object {
   private personsMutator: CollectionMutator<PersonJson, Person>;
   private pubsMutator: CollectionMutator<PublicationJson, Publication>;
   private photosMutator: CollectionMutator<PhotoJson, Photo>;
+  public newsMutator: CollectionMutator<NewsJson, News>;
 
   constructor(_db: Database) {
     super();
@@ -218,6 +223,12 @@ export class DatabaseMutator extends Object {
       decodePhoto,
       encodePhoto,
     );
+    this.newsMutator = new CollectionMutator(
+      _db.db.news,
+      "n-",
+      decodeNews,
+      encodeNews,
+    );
 
     // scan for fixes
     const pScanForFixesPersons = this.personsMutator.scanForFixes(
@@ -233,6 +244,14 @@ export class DatabaseMutator extends Object {
     );
 
     const pScanForFixesPhotos = this.photosMutator.scanForFixes();
+
+    const pScanForFixesNews = this.newsMutator.scanForFixes(
+      (news) =>
+        (news.relatedMembersIds?.filter((v) => v.startsWith(tempIdPrefix))
+          .length || 0) > 0 ||
+        (news.relatedPubIds?.filter((v) => v.startsWith(tempIdPrefix)).length ||
+          0) > 0,
+    );
 
     // fix cross-references then update DB
     const pUpdatePersons = Promise.all(
@@ -283,16 +302,43 @@ export class DatabaseMutator extends Object {
         ),
       );
 
+    const pUpdateNews = Promise.all(
+      [pScanForFixesNews, pScanForFixesPersons, pScanForFixesPubs]
+        .concat(this.newsMutator.pendingRemovals)
+        .concat(this.personsMutator.pendingRemovals)
+        .concat(this.pubsMutator.pendingRemovals),
+    )
+      .then(() => this.db.db.news.cleanup(0))
+      .then(() =>
+        Promise.all(
+          Array.from(this.newsMutator.fixes.values()).map(async (n) => {
+            if (n.relatedMembersIds) {
+              n.relatedMembersIds = n.relatedMembersIds.map(
+                (v) => this.personsMutator.fixes.get(v)?.id || v,
+              );
+            }
+            if (n.relatedPubIds) {
+              n.relatedPubIds = n.relatedPubIds.map(
+                (v) => this.pubsMutator.fixes.get(v)?.id || v,
+              );
+            }
+            await this.db.db.news.insert(encodeNews(n));
+          }),
+        ),
+      );
+
     // 5. apply changes!
     this.pendingJob = Promise.all([
       pUpdatePersons,
       pUpdatePubs,
       pUpdatePhotos,
+      pUpdateNews,
     ]).then(() => {
       this.dirty =
         this.personsMutator.fixes.size +
           this.pubsMutator.fixes.size +
-          this.photosMutator.fixes.size >
+          this.photosMutator.fixes.size +
+          this.newsMutator.fixes.size >
         0;
       for (const [id, person] of Array.from(
         this.personsMutator.fixes.entries(),
@@ -316,9 +362,16 @@ export class DatabaseMutator extends Object {
             `Assigned permanent ID='${photo.id}' for photo with temporary ID='${id}'`,
           );
       }
+      for (const [id, news] of Array.from(this.newsMutator.fixes.entries())) {
+        if (news.id !== id)
+          console.log(
+            `Assigned permanent ID='${news.id}' for news with temporary ID='${id}'`,
+          );
+      }
       this.personsMutator.clearFixes();
       this.pubsMutator.clearFixes();
       this.photosMutator.clearFixes();
+      this.newsMutator.clearFixes();
     });
   }
 
@@ -358,5 +411,17 @@ export class DatabaseMutator extends Object {
     );
     this.dirty = true;
     return decodePublication(p);
+  }
+
+  public async createNews(
+    news: Omit<News, "id"> & { id?: string },
+  ): Promise<News> {
+    await this.settle();
+    if (news.id === undefined) {
+      news.id = this.newsMutator.allocId();
+    }
+    const n = await this.db.db.news.insert(encodeNews(news as News));
+    this.dirty = true;
+    return decodeNews(n);
   }
 }

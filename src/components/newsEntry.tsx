@@ -38,6 +38,8 @@ export default function NewsEntry({
   // Get icon for news type
   const getNewsTypeIcon = (type?: NewsType): IconName | undefined => {
     switch (type) {
+      case NewsType.grant:
+        return "award";
       case NewsType.award:
         return "medal";
       case NewsType.publication:

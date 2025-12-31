@@ -18,6 +18,20 @@ export function processContent(text: string, members: Person[]): string {
     gfm: true,
   }) as string;
 
+  // Add classes to regular markdown links (before processing @mentions)
+  let non_mention_link_classes = "link ";
+  html = html.replace(/<a\s+([^>]*)>/g, (match, attrs) => {
+    // If the tag already has a class attribute, add to it; otherwise create one
+    if (/class\s*=\s*["']/.test(attrs)) {
+      return match.replace(
+        /class\s*=\s*["']([^"']*)["']/,
+        `class="${non_mention_link_classes} $1"`,
+      );
+    } else {
+      return `<a class="${non_mention_link_classes}" ${attrs}>`;
+    }
+  });
+
   // Then process @mentions in the resulting HTML
   const mentionRegex = /@(\w+)/g;
   html = html.replace(mentionRegex, (match, personId) => {

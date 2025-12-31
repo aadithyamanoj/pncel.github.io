@@ -65,6 +65,30 @@ const help_commands = {
       },
     ],
   },
+  "add-news": {
+    synopsis:
+      '$ node /scripts/db.js add-news [--type TYPE] [--date 2020-01-01] [--details "DETAILS"] "NEWS CONTENT"',
+    summary:
+      "Add news item. Supports @mentions in news/details to auto-link members (e.g., @jiayi).",
+    options: [
+      {
+        name: "--type",
+        typeLabel: "{underline TYPE}",
+        description:
+          'News type: other, award, publication, presentation, tapeout, newmember, graduation. Default to "other"',
+      },
+      {
+        name: "--date",
+        typeLabel: "{underline 2020-01-01}",
+        description: `Date of the news. Default to today (${encodeDate(new Date())})`,
+      },
+      {
+        name: "--details",
+        typeLabel: "{underline DETAILS}",
+        description: "Optional details/description for the news item",
+      },
+    ],
+  },
   help: {
     synopsis: "$ node /scripts/db.js help [command]",
     summary: "Display this usage guide or help on a particular command",
@@ -471,6 +495,88 @@ if (mainOptions.command === "add-photo") {
   });
   console.log(`Successfully added photo ${photo} -- new id: ${id}`);
   await mutator.persist(true);
+  await flush_and_exit();
+}
+
+/* ==============================================================================
+== Command: add-news ============================================================
+============================================================================== */
+if (mainOptions.command === "add-news") {
+  const commandDefinitions = [
+    { name: "type", type: String },
+    { name: "date", type: String },
+    { name: "details", type: String },
+  ];
+  const options = commandLineArgs(commandDefinitions, {
+    argv,
+    stopAtFirstUnknown: true,
+  });
+  const left = options._unknown || [];
+  if (left.length !== 1) {
+    await help_and_exit(mainOptions.command);
+  }
+
+  const newsContent = left[0];
+  const newsDetails = options.details;
+
+  // Extract @mentions from news content and details
+  const mentionPattern = /@(\w+)/g;
+  const mentions = new Set();
+
+  // Find mentions in news content
+  let match;
+  while ((match = mentionPattern.exec(newsContent)) !== null) {
+    mentions.add(match[1]);
+  }
+
+  // Find mentions in details if provided
+  if (newsDetails) {
+    mentionPattern.lastIndex = 0; // Reset regex
+    while ((match = mentionPattern.exec(newsDetails)) !== null) {
+      mentions.add(match[1]);
+    }
+  }
+
+  // Verify that mentioned IDs exist in the database as members
+  const relatedMembersIds = [];
+  for (const memberId of mentions) {
+    try {
+      const member = await db.getMember(memberId);
+      relatedMembersIds.push(member.id);
+      console.log(
+        `Found mentioned member: ${member.firstname} ${member.lastname} (id: ${member.id})`,
+      );
+    } catch (e) {
+      console.warn(
+        `Warning: @${memberId} mentioned but not found as a member in the database`,
+      );
+    }
+  }
+
+  // Create the news item
+  const newsData = {
+    news: newsContent,
+    time: new Date(options.date || encodeDate(new Date())),
+    details: newsDetails,
+    type: options.type,
+    relatedMembersIds:
+      relatedMembersIds.length > 0 ? relatedMembersIds : undefined,
+  };
+
+  try {
+    const created = await mutator.createNews(newsData);
+    await mutator.persist();
+    console.log(`Successfully created news item with id: ${created.id}`);
+    if (relatedMembersIds.length > 0) {
+      console.log(
+        `Linked to ${relatedMembersIds.length} member(s): ${relatedMembersIds.join(", ")}`,
+      );
+    }
+  } catch (e) {
+    console.error(`Failed to create news item: ${e.message}`);
+    await flush_and_exit(true);
+  }
+
   await flush_and_exit();
 }
 

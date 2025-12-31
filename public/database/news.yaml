@@ -1,20 +1,43 @@
 name: news
-schemaHash: 5fa01ee7255d42c2dbf7e38d4f0e8de615c6445f8564e037adc7ea7bbd935120
+schemaHash: 06db3bf7ba972abf6c5ab1030fe404519818ab3ce5d1f8c75fc72e764cad91ae
 docs:
   - id: "1"
     news: "`pncel.init();`"
     time: 2024-09-16
     _meta:
-      lwt: 1767167337375.03
+      lwt: 1767170427427.05
     _deleted: false
   - id: "2"
     news: Welcome our first PhD cohort, @jiayi, @jingqun, @darren, and @zhichen!
     time: 2024-09-16
     type: newmember
-    relatedPersonIds:
+    relatedMembersIds:
+      - jiayi
       - jingqun
       - darren
       - zhichen
     _meta:
-      lwt: 1767167337375.03
+      lwt: 1767170427427.05
+    _deleted: false
+  - news: Selected by UW Clean Energy Institute (CEI)'s [collaborative seed
+      grant](https://www.cei.washington.edu/research/collaborative-seed-grants/).
+      Thank you, CEI!
+    time: 2024-07-22
+    type: grant
+    id: n-000X01
+    relatedMembersIds:
+      - ang
+    _meta:
+      lwt: 1767170427427.05
+    _deleted: false
+  - news: "@zhichen is selected for the 2025-2026 [Meta AI
+      Mentorship](https://www.metacareers.com/careerprograms/research?tab=AI+Me\
+      ntorship) program. Congrats!"
+    time: 2025-04-01
+    type: grant
+    relatedMembersIds:
+      - zhichen
+    id: n-001202
+    _meta:
+      lwt: 1767170427427.05
     _deleted: false

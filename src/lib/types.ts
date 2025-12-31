@@ -24,6 +24,7 @@ export enum TagType {
 
 export enum NewsType {
   other,
+  grant,
   award,
   publication,
   presentation,
@@ -273,7 +274,7 @@ const newsSchemaLiteral = {
       type: "string",
       enum: Object.keys(NewsType) as (keyof typeof NewsType)[],
     },
-    relatedPersonIds: {
+    relatedMembersIds: {
       type: "array",
       items: { type: "string" },
     },

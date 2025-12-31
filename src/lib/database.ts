@@ -594,7 +594,7 @@ export class Database extends Object {
     limit?: number,
   ): Promise<News[]> {
     let query = this.db.news
-      .find({ selector: { relatedPersonIds: { $eq: personId } } })
+      .find({ selector: { relatedMembersIds: { $eq: personId } } })
       .sort({ time: "desc" });
     if (limit !== undefined) {
       query = query.limit(limit);
