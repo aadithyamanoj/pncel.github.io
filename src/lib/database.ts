@@ -85,6 +85,17 @@ export function encodeDate(d: Date | undefined): string | undefined {
   }
 }
 
+export function decodeDate(dateString: string): Date {
+  // Parse date strings as UTC dates (not local timezone)
+  // This ensures "2024-09-16" is treated as Sept 16, 2024 UTC midnight,
+  // not converted to local timezone which could shift the date by one day
+  const parts = dateString.split("-").map(Number);
+  const year = parts[0]!;
+  const month = parts[1]!;
+  const day = parts[2]!;
+  return new Date(Date.UTC(year, month - 1, day));
+}
+
 export function encodeTag(t: Tag): TagJson {
   return {
     ...t,
@@ -126,9 +137,9 @@ export function decodePerson(doc: RxDocument<PersonJson>): Person {
         : {
             ...m,
             role: decodeEnum(MemberRole, m.role)!,
-            whenJoined: new Date(m.whenJoined),
+            whenJoined: decodeDate(m.whenJoined),
             whenLeft:
-              m.whenLeft === undefined ? undefined : new Date(m.whenLeft),
+              m.whenLeft === undefined ? undefined : decodeDate(m.whenLeft),
           },
   };
 }
@@ -147,7 +158,7 @@ export function decodePublication(
   const p = doc.toJSON() as PublicationJson;
   return {
     ...p,
-    time: new Date(p.time),
+    time: decodeDate(p.time),
     tags: p.tags?.map(decodeTag),
     attachments: p.attachments,
     // icon is already a string (IconName), no conversion needed
@@ -165,7 +176,7 @@ export function decodePhoto(doc: RxDocument<PhotoJson>): Photo {
   const p = doc.toJSON() as PhotoJson;
   return {
     ...p,
-    time: new Date(p.time),
+    time: decodeDate(p.time),
   };
 }
 
@@ -182,7 +193,7 @@ export function decodeNews(doc: RxDocument<NewsJson>): News {
   const n = doc.toJSON() as NewsJson;
   return {
     ...n,
-    time: new Date(n.time),
+    time: decodeDate(n.time),
     type: decodeEnum(NewsType, n.type),
     tags: n.tags?.map(decodeTag),
   };

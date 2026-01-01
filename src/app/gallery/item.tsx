@@ -55,7 +55,7 @@ export default function GalleryItem({
           )}
           {spec.time && (
             <p className="text-center text-md">
-              {spec.time.toLocaleDateString()}
+              {spec.time.toLocaleDateString("en-US", { timeZone: "UTC" })}
             </p>
           )}
         </div>

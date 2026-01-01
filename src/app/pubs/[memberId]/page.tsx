@@ -41,9 +41,10 @@ export default async function PubsByMember({ params }: Params) {
   const member = await db.getMember(memberId);
   const pubs = await db.getAllPublicationsByPerson(member.id);
   const mByYear = pubs.reduce((g, pub) => {
-    const pubs = g.get(pub.time.getFullYear()) || [];
+    const year = pub.time.getUTCFullYear();
+    const pubs = g.get(year) || [];
     pubs.push(pub);
-    g.set(pub.time.getFullYear(), pubs);
+    g.set(year, pubs);
     return g;
   }, new Map<number, Publication[]>());
   const sortedByYear = Array.from(mByYear.entries())

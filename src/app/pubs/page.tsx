@@ -14,9 +14,10 @@ export default async function Pubs() {
   const db = await Database.get();
   const pubs = await db.getManyPublications();
   const mByYear = pubs.reduce((g, pub) => {
-    const pubs = g.get(pub.time.getFullYear()) || [];
+    const year = pub.time.getUTCFullYear();
+    const pubs = g.get(year) || [];
     pubs.push(pub);
-    g.set(pub.time.getFullYear(), pubs);
+    g.set(year, pubs);
     return g;
   }, new Map<number, Publication[]>());
   const sortedByYear = Array.from(mByYear.entries())

@@ -55,7 +55,9 @@ export default function Gallery({
                 <p className="text-md pb-2">{highlight.subtitle}</p>
               )}
               <p className="text-md pb-2">
-                {highlight.time.toLocaleDateString()}
+                {highlight.time.toLocaleDateString("en-US", {
+                  timeZone: "UTC",
+                })}
               </p>
               <Image
                 src={highlight.image}

@@ -158,6 +158,7 @@ export default function PubEntry({
             `, ${pub.time.toLocaleDateString("en-US", {
               year: "numeric",
               month: "short",
+              timeZone: "UTC",
             })}`}
           {/* pub.location && `, ${pub.location}` */}
         </p>
