@@ -9,9 +9,11 @@ import {
   faGlobe,
   faQuoteLeft,
   faBook,
+  faNewspaper,
 } from "@fortawesome/free-solid-svg-icons";
 import "@fortawesome/fontawesome-svg-core/styles.css";
 import PubList, { PubListFootnote } from "@/components/pubList";
+import NewsList from "@/components/newsList";
 import DefaultMDX from "@/layouts/defaultMdx";
 import DefaultMain from "@/layouts/defaultMain";
 import Link from "next/link";
@@ -74,6 +76,7 @@ export default async function MemberPage({ params }: Params) {
   const pubs = await (member.memberInfo.selectedPubIds
     ? db.getManyPublications(member.memberInfo.selectedPubIds)
     : db.getAllPublicationsByPerson(member.id));
+  const memberNews = await db.getAllNewsByPerson(member.id);
   const mdxSrc = await getMemberMdxSrc(memberId);
   const {
     avatar,
@@ -190,6 +193,13 @@ export default async function MemberPage({ params }: Params) {
               <FontAwesomeIcon icon={faQuoteLeft} /> Personal Statement
             </Link>
           </li>
+          {memberNews.length > 0 && (
+            <li>
+              <Link href="#news">
+                <FontAwesomeIcon icon={faNewspaper} /> News
+              </Link>
+            </li>
+          )}
           {pubs.length > 0 && (
             <li>
               <Link href={`#${useSelectedPubs ? "selected-" : ""}publications`}>
@@ -211,6 +221,17 @@ export default async function MemberPage({ params }: Params) {
             />
           </div>
         </DefaultMDX>
+        {memberNews.length > 0 && (
+          <>
+            <div className="divider"></div>
+            <DefaultMDX className="py-4">
+              <h2 className="mt-0" id="news">
+                <FontAwesomeIcon icon={faNewspaper} /> News
+              </h2>
+            </DefaultMDX>
+            <NewsList news={memberNews} />
+          </>
+        )}
         {pubs.length > 0 && (
           <>
             <div className="divider"></div>
