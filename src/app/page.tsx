@@ -15,7 +15,7 @@ export default async function Home() {
         <FancySlogan />
       </div>
       <DefaultMDX>
-        <p>Welcome to PᴺCEL's website!</p>
+        <p>Welcome to PᴺCEL&apos;s website!</p>
       </DefaultMDX>
       {latestNews.length > 0 && (
         <>
